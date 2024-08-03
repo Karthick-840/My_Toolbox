@@ -3,9 +3,6 @@ import fitz  # PyMuPDF
 import shutil
 
 
-# Example usage
-input_folder = 'C:/Users/gksme/PycharmProjects/sorting/edit/out_1'
-empty_folder = 'C:/Users/gksme/PycharmProjects/sorting/edit/out_1/filters'
 move_empty_pdfs(input_folder, empty_folder)
 
 Naturlitatie - 6,7,8,2,3,4,1,5, 12
