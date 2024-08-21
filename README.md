@@ -1,6 +1,4 @@
-.. title:: Office Tools Web Page
-
-Description
+Office Tools
 ===========
 
 A simple web page displaying office tools in a grid layout. The contemporary office environment is a complex ecosystem characterized by a plethora of tasks, documents, and meetings. While an array of tools exists to assist professionals in navigating this complexity, many fall short in terms of functionality, cost-effectiveness, or security and mother-of-all issue Sign-up for using the tool. This repository represents an initial step towards developing a suite of free, open-source office tools designed to enhance productivity and streamline workflows.
@@ -10,12 +8,6 @@ Requirements
 
 - Python 3.x
 - Required Python libraries (Install with `pip`):
-
-Files
-=====
-
-* `index.html`: Contains the HTML structure of the page.
-* `style.css`: (Optional) Contains CSS styles for the page.
 
 Setup
 =====
