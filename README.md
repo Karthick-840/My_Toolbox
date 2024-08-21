@@ -3,7 +3,13 @@
 Description
 ===========
 
-A simple web page displaying office tools in a grid layout.
+A simple web page displaying office tools in a grid layout. The contemporary office environment is a complex ecosystem characterized by a plethora of tasks, documents, and meetings. While an array of tools exists to assist professionals in navigating this complexity, many fall short in terms of functionality, cost-effectiveness, or security and mother-of-all issue Sign-up for using the tool. This repository represents an initial step towards developing a suite of free, open-source office tools designed to enhance productivity and streamline workflows.
+
+Requirements
+=====
+
+- Python 3.x
+- Required Python libraries (Install with `pip`):
 
 Files
 =====
@@ -19,62 +25,15 @@ Setup
 3. Paste the provided HTML and CSS code into their respective files.
 4. Open `index.html` in a web browser to view the page.
 
-HTML Structure
+Installation
 ==============
 
-.. code-block:: html
-
-   <!DOCTYPE html>
-   <html>
-   <head>
-     <title>Office Tools</title>
-     <link rel="stylesheet" href="style.css">
-   </head>
-   <body>
-     <h1>Office Tools</h1>
-     <div class="main-box">
-       <h2>PDF Manipulation</h2>
-       <div class="sub-box">PDF Manipulation Technique 1</div>
-       <div class="sub-box">PDF Manipulation Technique 2</div>
-     </div>
-     <div class="main-box">
-       <h2>Box 2</h2>
-     </div>
-   </body>
-   </html>
-
-CSS Styling
-===========
-
-.. code-block:: css
-
-   body {
-     background-color: white;
-     text-align: center;
-   }
-
-   h1 {
-     background-color: red;
-     color: white;
-   }
-
-   .main-box {
-     background-color: gray;
-     border: 1px solid black;
-     margin: 10px;
-     padding: 20px;
-     width: 200px;
-     height: 200px;
-     display: inline-block;
-   }
-
-   .main-box h2 {
-     font-size: 24px;
-   }
-
-   .sub-box h3 {
-     font-size: 18px;
-   }
+1. Clone the repository to your local machine.
+2. Navigate to the project directory.
+3. Install the required libraries:
+  ```bash
+   pip install -r requirements.txt
+  ```
 
 Customization
 ============

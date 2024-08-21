@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from pdf_manipulation import PDFManipulation
+from office_tools.pdf_ops import PDFManipulation
 
 app = Flask(__name__)
 

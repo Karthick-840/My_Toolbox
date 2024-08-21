@@ -1,15 +1,19 @@
-Office Tools
+PDF Operations
 ===========
-
-The contemporary office environment is a complex ecosystem characterized by a plethora of tasks, documents, and meetings. While an array of tools exists to assist professionals in navigating this complexity, many fall short in terms of functionality, cost-effectiveness, or security and mother-of-all issue Sign-up for using the tool. This repository represents an initial step towards developing a suite of free, open-source office tools designed to enhance productivity and streamline workflows.
-
-<h2>PDF Manipulation: A Foundation for Efficiency:</h2>
 
 PDF documents are ubiquitous in professional settings. Tasks such as combining research papers, dissecting lengthy reports, or extracting specific page ranges are common but often time-consuming. This tool aims to simplify these operations and provide a foundation for more advanced PDF interactions.
 
+## Overview
+
+This module provides functionalities to access, extract, and manipulate PDF files. It includes the following components:
+
+1. **PDF_Access**: List and read PDF files in a directory.
+2. **PDF_Extract**: Extract text, tables, and images from PDF files.
+3. **PDF_Manipulate**: Merge, split, and move PDF files.
+
 <h3>Core Functionalities</h3>
 
-* **Splitting PDFs & Merging PDFs** 
+* **Splitting PDFs & Merging PDFs** Merge multiple PDFs into a single document, either in alphabetical order or a prescribed order. Also, Split a PDF into individual pages or specific page ranges.
 * **Removing Blank Pages:** Streamline PDFs by eliminating unnecessary blank pages.
 * **Custom Page Extraction:** Extract specific pages or page ranges from a PDF to create new documents.
 
