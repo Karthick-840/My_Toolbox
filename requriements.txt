@@ -1,0 +1,8 @@
+pdfminer==20240706
+pyPDF2==3.0.1
+PyMuPDF==1.24.9
+pillow==10.3.0
+tabula==1.0.5
+requests==2.31.0
+pandas==2.2.2
+reportlab==4.2.2
