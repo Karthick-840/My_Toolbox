@@ -1,6 +1,9 @@
 import pandas as pd
 from datetime import datetime, timedelta
 import calendar
+import time
+import json
+
 
 class Date_Manipulations:
 
@@ -13,6 +16,19 @@ class Date_Manipulations:
             return datetime.today().strftime('%Y-%m-%d')
         else:
             return text
+  
+    def convert_to_standard_date(self, date_str):
+        try:
+            # Try parsing the date assuming it's already in YYYY-MM-DD format
+            return pd.to_datetime(date_str, format='%Y-%m-%d', errors='raise').strftime('%Y-%m-%d')
+        except ValueError:
+            try:
+                # If it fails, try parsing it in the other format (e.g., '6-May-20')
+                return pd.to_datetime(date_str, format='%d-%b-%y').strftime('%Y-%m-%d')
+            except Exception as e:
+                # Log the error with the row index and problematic date_str
+                print(f"Error converting date '{date_str}' in row {row_index}: {e}")
+                raise e
 
     def string_to_datetime(self, text,format='%Y-%m-%d'):
         
@@ -122,16 +138,6 @@ class Date_Manipulations:
         
         return result
         
-    
-        
-
-    
-    
- import datetime
-import calendar
-import time
-import json
-
 
 # Time Tracking
 

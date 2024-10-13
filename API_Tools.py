@@ -14,26 +14,129 @@ import pandas as pd
 import json
 import time
 
+import yfinance as yf
+import pandas as pd
+import matplotlib.pyplot as plt 
+from dateutil import relativedelta
+from datetime import timedelta
+import numpy as np
+import pandas as pd
+import time
+import requests
+import time
+import os
+import json
 
-def Rapid_API_calls(rapid_api_dict, local_save=False, file_name=None, params=None):
+from general_functions.data_storage import Data_Storage as DS
+
+
+def Rapid_API_calls(rapid_api_dict, logger, params=None):
     time.sleep(1)
-    
+    logger = logger.getChild(__name__)
     url = rapid_api_dict.get("url")
     headers = rapid_api_dict.get("headers")
-    
-    if not headers:
-        response = requests.get(url,verify=False)
-    elif params:
-        print(params)
-        response = requests.get(url, headers=headers, params=params, verify=False)
-    else:
-        response = requests.get(url, headers=headers, verify=False)
-     
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print("Wrong response")
+    try:
+        if not headers:
+            response = requests.get(url,verify=False)
+        elif params:
+            response = requests.get(url, headers=headers, params=params, verify=False)
+        else:
+            response = requests.get(url, headers=headers, verify=False)
+        
+        if response.status_code == 200:
+            logger.info("Status code: {response.status_code}: Rapid API call Successfull")
+            response_json = response.json()
+            if 'data' in response:
+                response_json = response_json['data']
+            return response_json
+        
+        # Handle different status codes with messages
+        elif response.status_code == 400:
+            logger.info("Status code: {response.status_code}: Bad Request: The server could not understand the request.")
+        elif response.status_code == 401:
+            logger.info("Status code: {response.status_code}: Unauthorized: Access is denied due to invalid credentials.")
+        elif response.status_code == 403:
+            logger.info("Status code: {response.status_code}: Forbidden: You do not have permission to access this resource.")
+        elif response.status_code == 404:
+            logger.info("Status code: {response.status_code}: Not Found: The requested resource could not be found.")
+        elif response.status_code == 429:
+            logger.info("Status code: {response.status_code}: Too Many Requests: You have exceeded the rate limit.")
+        elif response.status_code == 500:
+            logger.info("Status code: {response.status_code}: Internal Server Error: The server encountered an error.")
+        else:
+            logger.info(f"Status code: {response.status_code}: Unexpected status code: {response.status_code}")
+
+    except Exception as e:
+        logger.info(f"Status code: {response.status_code}: An error occurred: {e}")
         return None
+
+def Include_stamp_duty(value,transaction_date):
+        # Stamp duty is a form of tax levied on the purchase or sale of an asset or security.It is collected at a meagre rate of 0.005% of the overall purchase made and is effective from 1 July 2020 as per the government’s order. 
+        if pd.to_datetime(transaction_date) > pd.to_datetime('2020-07-01'):
+            return round(int(value)*(1-0.00005),2)
+        else:
+            return int(value)
+        
+def Get_yfinance_info(yahoo_summary,type,save_path, logger, Process):
+    
+    if Process != "get_history":
+        yahoo_summary = yahoo_summary[yahoo_summary['Security_Status'] != 'Sold']
+        yahoo_summary['min_start'] =  pd.to_datetime(pd.Timestamp.now().replace(day=1))
+
+    logger = logger.getChild(__name__)
+    History = []
+    Unavailable = []
+    price_df = pd.DataFrame()
+    
+    for index, row in yahoo_summary.iterrows():
+            ticker = row['Yahoo_Ticker']
+            try:
+                min_start = pd.to_datetime(row['min_start']).date()
+                max_end = pd.to_datetime(row['max_end']).date()
+                
+                time.sleep(4)
+                ticker_data = yf.Ticker(ticker)
+                price_df = ticker_data.history(period="max")
+                price_df.reset_index(inplace=True)
+                
+                price_df['Date'] = pd.to_datetime(price_df['Date']).dt.date
+                price_df = price_df[(price_df['Date'] >= min_start) & (price_df['Date'] <= max_end)]
+                info = ticker_data.info
+                min_date_str = price_df['Date'].min().strftime('%Y-%m-%d')  # Convert to string
+                max_date_str = price_df['Date'].max().strftime('%Y-%m-%d')  # Convert to string
+                columns_to_drop = ['Open', 'High', 'Low', 'Volume']
+                # Only drop columns that exist in the DataFrame
+                price_df = price_df.drop(columns=[col for col in columns_to_drop if col in price_df.columns])
+
+
+                if type =='SIP':
+                    price_df = price_df.drop(['Dividends','Stock Splits'], axis=1)
+                else:
+                    price_df = price_df[(price_df['Dividends'] > 0) | (price_df['Stock Splits'] > 0)]
+                    price_df = price_df.drop(['Close'], axis=1)
+                    
+                if 'Date' in price_df.columns:
+                    price_df['Date'] = price_df['Date'].astype(str)
+
+                json_file = { 'Yahoo_Ticker': ticker,"info": info , 
+                "prices": price_df.to_dict(orient='records') if isinstance(price_df, pd.DataFrame) and not price_df.empty else {}}
+
+                output_file_path = os.path.join(save_path, f'New_{type}_{ticker}_Info.json')
+                with open(output_file_path , 'w') as f:
+                    json.dump(json_file,f)
+                History.append(json_file)
+                
+                #min_date, max_date = price_df['Date'].min().strftime('%Y-%m-%d'), price_df['Date'].max().strftime('%Y-%m-%d')
+                logger.info(f'Query for {ticker}  data between {min_start} and {max_end}')
+            except Exception as e:
+                logger.info(f"Error processing {ticker}: {e}")     # Print the ticker and the error message
+                Unavailable.append(ticker)
+           
+    output_file_path = os.path.join(save_path, f'New_{type}_Info.json')
+    with open(output_file_path , 'w') as f:
+        json.dump(History,f)   
+    logger.info(f"Merged JSON saved to {output_file_path}")   
+    logger.info(f"Securities unavailable: {', '.join(Unavailable)}")
 
 def Dividend_History(ticker_data,purchase_data):
     
@@ -162,33 +265,7 @@ def currency_convert(df):
                 
         del ticker
     
-class Redundant_Functions():
-    def __init__(self,) -> None:
-    def apply(self):
-        pass
-    
-    def gold_rate_history(self):
-    
-    # 50 per month
 
-    url = "https://gold-rates-india.p.rapidapi.com/api/gold-city-history"
-
-    querystring = {"type":"monthly"}
-
-    headers = {
-      "x-rapidapi-key": "513455dd81msh1a3cf1901196937p109fbdjsnbe2ae109fbad",
-      "x-rapidapi-host": "gold-rates-india.p.rapidapi.com"
-    }
-
-    response = requests.get(url, headers=headers, params=querystring)
-
-    json_output_path = os.path.join(self.output_folder,"gold_rate_history.json")
-    with open(json_output_path, 'w') as f:
-      json.dump(response.json(), f, indent=4)   
-            
-    
-  
- 
 # NOTION TOOLS
 
 # Prerequesit Create Notion Integration
