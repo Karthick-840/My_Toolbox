@@ -2,6 +2,11 @@ import os
 import json
 from kaggle.api.kaggle_api_extended import KaggleApi
 
+# The goal is to do this
+# mkdir -p ~/.kaggle
+# mv ~/Downloads/kaggle.json ~/.kaggle/
+# chmod 600 ~/.kaggle/kaggle.json  # To ensure that the file is only readable by you
+
 
 def Get_data_from_kaggle():
     # Directory to save the kaggle.json
