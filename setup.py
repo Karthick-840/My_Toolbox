@@ -12,11 +12,7 @@ setup(
     description="A useful set of tools for office productivity",
     url="https://github.com/Karthick-840/Office_Toolbox",
     py_modules=["Directory_Tools","Git_Tools.py","Kaggle_Tools.py","PDF_Tools.py","API_Tools.py","String_Ops.py","Time_Ops.py"],  # List the module directly
-    install_requires=[
-        "Flask",
-        "geopandas",
-        # Add other dependencies from requirements.txt as needed
-    ],
+    install_requires=read_requirements('requirements.txt'),  # Read requirements from requirements.txt
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
