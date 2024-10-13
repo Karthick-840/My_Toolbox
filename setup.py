@@ -12,7 +12,7 @@ setup(
     author="Karthick Jayaraman",
     description="A useful set of tools for office productivity",
     url="https://github.com/Karthick-840/Office_Toolbox",
-    py_modules=["Directory_Tools","Git_Tools.py","Kaggle_Tools.py","PDF_Tools.py","API_Tools.py","String_Ops.py","Time_Ops.py"],  # List the module directly
+    py_modules=["Directory_Tools","Git_Tools","Kaggle_Tools","PDF_Tools","API_Tools","String_Ops","Time_Ops"],  # List the module directly
     install_requires=read_requirements('requirements.txt'),  # Read requirements from requirements.txt
     classifiers=[
         "Programming Language :: Python :: 3",
