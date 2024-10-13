@@ -1,9 +1,10 @@
 from setuptools import setup, find_packages
 
 # Function to read requirements.txt and return a list of dependencies
-def parse_requirements(filename):
-    with open(filename, 'r') as file:
-        return file.read().splitlines()
+def read_requirements(file_path):
+    """Reads a requirements file and returns a list of requirements."""
+    with open(file_path, 'r') as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
 setup(
     name="Office_toolbox",
