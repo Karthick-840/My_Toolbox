@@ -29,7 +29,7 @@ def Get_data_from_kaggle():
     api = KaggleApi()
     api.authenticate()
 
-    !kaggle datasets download -d kazanova/sentiment140
+    #!kaggle datasets download -d kazanova/sentiment140
 
     os.remove(kaggle_json_path)
     
@@ -44,5 +44,5 @@ def Get_data_from_kaggle():
             extract_dir = os.path.splitext(zip_file)[0]  # Use the zip filename (without extension) as the extraction directory name
             zip_ref.extractall(extract_dir)
             print(f"Extracted {zip_file} to {extract_dir}/")
-        else:
-            print("No zip file found in the current directory.")
+    else:
+        print("No zip file found in the current directory.")
