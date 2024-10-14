@@ -3,16 +3,15 @@ import subprocess
 import pandas as pd
 import json
 import datetime
-
+import zipfile
 
 
 class Data_Storage:
     
     def __init__(self,logger):
-        self.logger = logger.info('Data Storage Initiated.')
+        self.logger = logger.info('Data Storage Tools Initiated.')
         self.logger = logger.getChild(__name__)
-        pass
-    
+       
     def upload_files(self, filepath):  # Better word is import files
         df = pd.DataFrame()  # Create an empty dataframe
         try:
@@ -121,45 +120,27 @@ class Data_Storage:
         except FileNotFoundError:
             print(f"Error: File not found at {filepath}")            
 
-def create_local_repo(repo_name, directory):
-    # Change directory to the specified path
-    os.chdir(directory)
 
-    # Initialize Git repository
-    subprocess.run(['git', 'init'])
+class Zip_Tools:
+    def __init__(self,logger):
+        self.logger = logger.info('ZIP Tools Initiated.')
+        self.logger = logger.getChild(__name__)
+        
+    def extract_zip_file(self):
+        """Extract a .zip file if found in the current directory."""
+        try:
+            zip_file = None
+            for file in os.listdir():
+                if file.endswith('.zip'):
+                    zip_file = file
+                    break
 
-    # Create README file
-    with open('README.md', 'w') as readme_file:
-        readme_file.write(f"# {repo_name}\n")
-
-    # Stage files
-    subprocess.run(['git', 'add', '.'])
-
-    # Commit changes
-    subprocess.run(['git', 'commit', '-m', 'Initial commit'])
-
-    print(f"Local repository '{repo_name}' creation and initialization completed successfully.")
-
-def link_remote_repo(repo_name, directory, github_url):
-    # Change directory to the specified path
-    os.chdir(directory)
-
-    # Link local repository to remote repository
-    subprocess.run(['git', 'remote', 'add', 'origin', github_url])
-
-    # Push changes to remote repository
-    subprocess.run(['git', 'push', '-u', 'origin', 'master'])
-
-    print(f"Repository '{repo_name}' linked to remote repository and changes pushed successfully.")
-
-# Read repository names and GitHub URLs from a text file
-with open('repositories.txt', 'r') as file:
-    for line in file:
-        repo_name, github_url = line.strip().split(',')
-        directory = os.path.join(os.getcwd(), repo_name)
-
-        # Create local repository
-        create_local_repo(repo_name, directory)
-
-        # Link to remote repository
-        link_remote_repo(repo_name, directory, github_url)
+            if zip_file:
+                with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                    extract_dir = os.path.splitext(zip_file)[0]  # Use zip filename as directory
+                    zip_ref.extractall(extract_dir)
+                    print(f"Extracted {zip_file} to {extract_dir}/")
+            else:
+                print("No zip file found in the current directory.")
+        except Exception as e:
+            print(f"Error extracting zip file: {e}")

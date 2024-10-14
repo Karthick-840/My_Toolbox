@@ -1,7 +1,6 @@
 import re
 import pandas as pd
 
-
 class String_Functions:
     def __init__(self):
         pass
@@ -14,47 +13,28 @@ class String_Functions:
         except KeyError:
             return 12
         
-    def string_2_text(self,text):
-        
-    # Replace with your specific pattern to extract numbers (consider symbols and decimals)
-         # Extract numbers from relevant columns (assuming specific format)
-
+    
+    def string_2_num(self, text, number_type=float):
         try:
-            if not isinstance(text, str):  # Check for string type
-                return 0  # Return None for non-string inputs
-
-        # Replace with your specific pattern to extract numbers (consider symbols and decimals)
-            return float(re.sub(r"[^\d\-+\.]", "", text))  # Extract numbers, ., -, +
-        except ValueError:
-        # Handle cases where the conversion to float fails (e.g., non-numeric text)
-            return None
+            # If the input is a string or object, process it
+            if isinstance(text, (str, object)) or not isinstance(text, (int,float)):
+                # Replace commas in the number, if any
+                #text = text.replace(",", "")
+                # Remove non-numeric characters except digits, ., -, and +
+                number_str = re.sub(r"[^\d\-+\.]", "", text)
+                
+                # Check if the result is a valid number
+                if number_str:
+                    return number_type(number_str)  # Convert to the desired type
+                
+            # If it's already a number, return it as-is
+            return number_type(text)
         
-    def string_to_number(self,text, number_type=float):
-        """
-        Converts a string to a number (int or float).
-
-        Args:
-        text (str): The input text to be converted.
-        number_type (type): The type of number to convert to (int or float). Default is int.
-
-        Returns:
-        int/float: The converted number, or None if conversion fails.
-        """
-        try:
-            if isinstance(text, (int, float)):  # If the input is already a number, return it directly
-                return number_type(text)
-        
-            if not isinstance(text, str) or not isinstance(text, (int, float)):  # Check if the input is a string
-                return None
-            
-            # Extract numbers, ., -, +
-            number_str = re.sub(r"[^\d\-+\.]", "", text)
-            
-            # Convert to the specified number type
-            return number_type(number_str)
         except (ValueError, TypeError):
-            # Handle cases where conversion fails
-            return None
+            # Return None or some default value on failure to convert
+            return text
+
+
 
     def number_to_string(self,number):
         """
@@ -95,5 +75,7 @@ class String_Functions:
 
     
     
+    
+     
     
      
