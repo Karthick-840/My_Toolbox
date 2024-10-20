@@ -8,16 +8,16 @@ def read_requirements(file_path):
 
 setup(
     name="My_Toolbox",
-    version="2.2",
+    version="1.0.3",  # Update this version as needed
     author="Karthick Jayaraman",
-    description="A useful set of tools for office productivity",
+    description="A useful set of tools for productivity",
     url="https://github.com/Karthick-840/My_Toolbox",
-    packages=find_packages(),  # List the module directly
+    packages=find_packages(),  # Automatically find packages in the Tools directory
     install_requires=read_requirements("requirements.txt"),  # Read requirements from requirements.txt
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.6',  # Minimum Python version requirement
 )
