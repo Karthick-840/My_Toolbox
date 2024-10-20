@@ -8,7 +8,7 @@ import zipfile
 
 class Data_Storage:
     
-    def __init__(self,logger):
+    def __init__(self,logger=None):
         self.logger = logger.info('Data Storage Tools Initiated.')
         self.logger = logger.getChild(__name__)
        

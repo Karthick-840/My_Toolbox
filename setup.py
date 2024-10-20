@@ -7,12 +7,12 @@ def read_requirements(file_path):
         return [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
 setup(
-    name="Office_toolbox",
+    name="Office_Toolbox",
     version="2.2",
     author="Karthick Jayaraman",
     description="A useful set of tools for office productivity",
     url="https://github.com/Karthick-840/Office_Toolbox",
-    py_modules=find_packages(),  # List the module directly
+    packages=find_packages(),  # List the module directly
     install_requires=read_requirements("requirements.txt"),  # Read requirements from requirements.txt
     classifiers=[
         "Programming Language :: Python :: 3",
