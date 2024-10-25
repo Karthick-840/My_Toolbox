@@ -103,7 +103,7 @@ class Finance_Tools:
 
         except Exception as e:
             self.logger.error(f"Error processing {ticker}: {e}")
-            return None  # Return None if data fetching fails
+            return  {'Yahoo_Ticker': ticker}  # Return None if data fetching fails
         
         
     @staticmethod
