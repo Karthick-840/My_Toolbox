@@ -5,7 +5,7 @@ import time
 import requests
 import platform
 import subprocess
-import pkg_resources
+#import pkg_resources
 
 
 class API_Tools:
@@ -216,64 +216,64 @@ class Git_Tools:
             self.logger.info("requirements.txt successfully generated!")
         except subprocess.CalledProcessError as e:
             self.logger.info(f"Error occurred: {e}")
-            self.logger.info("Attempting to generate requirements.txt manually...")
+    #         self.logger.info("Attempting to generate requirements.txt manually...")
              
-            try:
-                all_imports = self.get_all_imports_from_directory(directory)
-                requirements = self.get_installed_versions(all_imports)
+    #         try:
+    #             all_imports = self.get_all_imports_from_directory(directory)
+    #             requirements = self.get_installed_versions(all_imports)
 
-                requirements_path  = os.path.join(directory,"requirements.txt")
-                # Write the requirements to a file
-                with open(requirements_path, 'w') as f:
-                    for req in requirements:
-                        f.write(f"{req}\n")
+    #             requirements_path  = os.path.join(directory,"requirements.txt")
+    #             # Write the requirements to a file
+    #             with open(requirements_path, 'w') as f:
+    #                 for req in requirements:
+    #                     f.write(f"{req}\n")
 
-                self.logger.info("requirements.txt file generated.")
-            except Exception as e:
-                self.logger.info(f"Error occurred while manually generating requirements.txt: {e}")
+    #             self.logger.info("requirements.txt file generated.")
+    #         except Exception as e:
+    #             self.logger.info(f"Error occurred while manually generating requirements.txt: {e}")
     
 
-    def get_all_imports_from_directory(self,directory):
-        """Get all unique imports from all Python files in the directory."""
-        imports_set = set()
+    # def get_all_imports_from_directory(self,directory):
+    #     """Get all unique imports from all Python files in the directory."""
+    #     imports_set = set()
         
-        for root, _, files in os.walk(directory):
-            for file in files:
-                if file.endswith(".py"):
-                    filepath = os.path.join(root, file)
-                    imports = self.get_imports_from_file(filepath)
-                    imports_set.update(imports)
+    #     for root, _, files in os.walk(directory):
+    #         for file in files:
+    #             if file.endswith(".py"):
+    #                 filepath = os.path.join(root, file)
+    #                 imports = self.get_imports_from_file(filepath)
+    #                 imports_set.update(imports)
         
-        return sorted(imports_set)
+    #     return sorted(imports_set)
     
-    def get_imports_from_file(self,filepath):
-        """Extract all imports from a Python file."""
-        self.logger.info(f"Importing from file {filepath}")
-        with open(filepath, "r", encoding="utf-8") as file:
-            tree = ast.parse(file.read(), filename=filepath)
+    # def get_imports_from_file(self,filepath):
+    #     """Extract all imports from a Python file."""
+    #     self.logger.info(f"Importing from file {filepath}")
+    #     with open(filepath, "r", encoding="utf-8") as file:
+    #         tree = ast.parse(file.read(), filename=filepath)
         
-        imports = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                for alias in node.names:
-                    imports.append(alias.name.split('.')[0])  # Only get the base module
-            elif isinstance(node, ast.ImportFrom):
-                if node.module:
-                    imports.append(node.module.split('.')[0])  # Only get the base module
-        return imports
+    #     imports = []
+    #     for node in ast.walk(tree):
+    #         if isinstance(node, ast.Import):
+    #             for alias in node.names:
+    #                 imports.append(alias.name.split('.')[0])  # Only get the base module
+    #         elif isinstance(node, ast.ImportFrom):
+    #             if node.module:
+    #                 imports.append(node.module.split('.')[0])  # Only get the base module
+    #     return imports
 
-    def get_installed_versions(self,imports):
-        """Get the installed versions of each imported package."""
-        installed_packages = {pkg.key: pkg.version for pkg in pkg_resources.working_set}
-        requirements = []
+    # def get_installed_versions(self,imports):
+    #     """Get the installed versions of each imported package."""
+    #     installed_packages = {pkg.key: pkg.version for pkg in pkg_resources.working_set}
+    #     requirements = []
         
-        for imp in imports:
-            if imp in installed_packages:
-                requirements.append(f"{imp}=={installed_packages[imp]}")
-            else:
-                requirements.append(imp)  # If version not found, just add the package name
+    #     for imp in imports:
+    #         if imp in installed_packages:
+    #             requirements.append(f"{imp}=={installed_packages[imp]}")
+    #         else:
+    #             requirements.append(imp)  # If version not found, just add the package name
 
-        return requirements
+    #     return requirements
 
 # # NOTION TOOLS
 
