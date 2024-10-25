@@ -1,11 +1,12 @@
+import os
+import ast
+import json
 import time
 import requests
-import time
-import os
-import json
-import zipfile
-from kaggle.api.kaggle_api_extended import KaggleApi
+import platform
 import subprocess
+import pkg_resources
+
 
 class API_Tools:
     def __init__(self,logger):
@@ -57,48 +58,58 @@ class API_Tools:
             self.logger.info(f"Status code: {response_status_code}: Unexpected status code")
 
 class Kaggle_Tools:
-    def __init__(self, logger,kaggle_dir=None, move_to_read_only=False):
-        self.logger = logger.info('Kaggle Data downloading...')
-        self.logger = logger.getChild(__name__)
+    def __init__(self, logger=None,kaggle_dir=None, move_to_read_only=True):
+        if logger:
+            self.logger = logger.info('Kaggle API is Initiated...')
+            self.logger = logger.getChild(__name__)
         if kaggle_dir:
             self.kaggle_dir = kaggle_dir
-        if move_to_read_only:
-            self.move_to_read_only = move_to_read_only
+        else:
+            self.kaggle_dir = os.getcwd()
+        self.move_to_read_only = move_to_read_only
 
+    def apply(self,dataset_name):
+        self.kaggle_auth()
+        self.download_dataset(dataset_name)
+        
+    
     def kaggle_auth(self):
         try:
             if 'KAGGLE_USERNAME' in os.environ and 'KAGGLE_KEY' in os.environ:
-                print("Kaggle credentials found in environment variables.")
+                self.logger.info("Kaggle credentials found in environment variables.")
            
             else:
-                print("Kaggle credentials not found in environment variables.")
-                print("Proceeding to Credentails Import")
-                self.setup_kaggle_credentials(self.kaggle_dir,self.move_to_read)        
+                self.logger.info("Kaggle credentials not found in environment variables.")
+                self.logger.info("Proceeding to Credentails Import")
+                self.setup_kaggle_credentials()        
             
 
         except Exception as e:
-            print(f"Error setting up Kaggle credentials: {e}")
+            self.logger.info(f"Error setting up Kaggle credentials: {e}")
     
         
     def setup_kaggle_credentials(self):
         """Set up Kaggle credentials from the directory if provided, else from environment variables."""
         try:
             self.kaggle_json_path = os.path.join(self.kaggle_dir, 'kaggle.json')
+            self.logger.info(self.kaggle_json_path)
 
             if os.path.exists(self.kaggle_json_path):
                 with open(self.kaggle_json_path) as f:
                     kaggle_creds = json.load(f)
-
+                
                 os.environ['KAGGLE_USERNAME'],os.environ['KAGGLE_KEY'] = kaggle_creds['username'], kaggle_creds['key']
-                    
-                if self.move_to_read_only:
+                
+                self.logger.info("Json File Imported and loaded into environment")
+
+                if self.move_to_read_only is not None:
                     self.kaggle_move_to_read_only()
-                    print(f"Kaggle credentials loaded from {self.kaggle_json_path}")
+                    self.logger.info(f"Kaggle credentials loaded from {self.kaggle_json_path}")
                 else:
-                    print(f"No kaggle.json file found in {self.kaggle_dir}.")
+                    self.logger.info(f"kaggle.json not moved from {self.kaggle_dir}.")
 
         except Exception as e:
-            print(f"Error setting up Kaggle credentials: {e}")
+            self.logger.info(f"Error setting up Kaggle credentials: {e}")
             return False
 
     def kaggle_move_to_read_only(self):
@@ -106,31 +117,163 @@ class Kaggle_Tools:
             secure_kaggle_dir = os.path.expanduser('~/.kaggle')
             if not os.path.exists(secure_kaggle_dir):
                 os.makedirs(secure_kaggle_dir)
-                
             secure_kaggle_json_path = os.path.join(secure_kaggle_dir, 'kaggle.json')
-            subprocess.run(['mv', self.kaggle_json_path, secure_kaggle_json_path ])
-            subprocess.run(['chmod', '600', secure_kaggle_json_path])
+
+            if platform.system() == "Windows":
+                try:                
+                    os.rename(self.kaggle_json_path, secure_kaggle_json_path)
+                    self.logger.info(f'Moved Kaggle JSON to {secure_kaggle_json_path}')
+                except Exception as e:
+                    self.logger.info(f'Error moving Kaggle JSON file in Windows: {e}')
+
+                    # Verify that the file has been moved
+                    if os.path.exists(secure_kaggle_json_path):
+                        self.logger.info(f'Success! The file has been moved to: {secure_kaggle_json_path}')
+                    
+            else:
+                # On Unix-like systems, use chmod
+                try:
+                    subprocess.run(['mv', self.kaggle_json_path, secure_kaggle_json_path ])
+                    subprocess.run(['chmod', '600', secure_kaggle_json_path], check=True)
+                    self.logger.info(f'Set permissions for {secure_kaggle_json_path} to 600.')
+                except Exception as e:
+                    self.logger.info(f'Error setting permissions in UNIX: {e}')
+                
             
-            print(f"Moved kaggle.json to {secure_kaggle_json_path} and set it as readable only by the user.")
+            self.logger.info(f"Moved kaggle.json to {secure_kaggle_json_path} and set it as readable only by the user.")
             
             if self.kaggle_json_path and os.path.exists(self.kaggle_json_path):
                 os.remove(self.kaggle_json_path)
-                print(f"Removed {self.kaggle_json_path}")
+                self.logger.info(f"Removed {self.kaggle_json_path}")
                 
         except Exception as e:
-            print(f"Error Moving or cleaning up Kaggle JSON file: {e}")
+            self.logger.info(f"Error Moving or cleaning up Kaggle JSON file: {e}")
             
     def download_dataset(self, dataset_name: str):
         """Download a Kaggle dataset."""
+        from kaggle.api.kaggle_api_extended import KaggleApi
+
         try:
             api = KaggleApi()
             api.authenticate()
-            print("Successfully authenticated with Kaggle API.")
-            api.dataset_download_files(dataset_name, path=os.getcwd(), unzip=False)
-            print(f"Downloaded dataset: {dataset_name}")
+            self.logger.info("Successfully authenticated with Kaggle API.")
+            api.dataset_download_files(dataset_name, path=os.getcwd(), unzip=True)
+            self.logger.info(f"Downloaded dataset: {dataset_name}")
         except Exception as e:
-            print(f"Error downloading dataset: {e}")
+            self.logger.info(f"Error downloading dataset: {e}")
                 
+class Git_Tools:
+    
+    def __init__(self,logger):
+        self.logger = logger.info('My Git Tools Imported.')
+        self.logger = logger.getChild(__name__)
+
+    def create_local_repo(self,repo_name, folder_path=None,remote_url=None):
+        # Change directory to the specified path
+        
+        if folder_path is None:
+            folder_path = os.getcwd()
+            
+        repo_path = os.path.join(folder_path,repo_name)
+    
+        if not os.path.exists(repo_path):
+        # Create the directory if it doesn't exist
+            os.makedirs(repo_path)
+            self.logger.info(f"Directory for project '{repo_name}' created.")
+        else:
+            self.logger.info(f"Directory for '{repo_name}' already exists.")
+                
+        os.chdir(repo_path)
+
+        # Initialize Git repository
+        subprocess.run(['git', 'init'])
+        self.logger.info(f"Local repository '{repo_name}' created and initialized successfully.")
+        
+        if remote_url:
+            subprocess.run(['git', 'remote', 'add', 'origin', remote_url])             # Link local repository to remote repository
+            
+            # Push changes to remote repository
+            subprocess.run(['git', 'pull', 'origin', 'main'])
+
+            self.logger.info(f"Repository '{repo_name}' linked to remote repository and changes pulled successfully.")
+
+    def create_repos_from_file(self,repos_path_file):
+        
+         if not os.path.exists(repos_path_file):
+             with open(repos_path_file, 'r') as file:
+                for line in file:
+                    repo_name, github_url = line.strip().split(',')
+                    self.create_local_repo(repo_name, remote_url=github_url)
+
+    def create_requirements(self,directory):
+        try:
+            self.logger.info(f"Generating requirements.txt for the directory: {directory}")
+            # Use the full path to pipreqs in the virtual environment
+            pipreqs_path = os.path.join(os.path.dirname(os.sys.executable), 'pipreqs.exe')
+            print( pipreqs_path)
+            subprocess.check_call([pipreqs_path, directory, '--force'])
+            #subprocess.check_call([os.sys.executable, 'pipreqs.pipreqs', directory, '--force'])
+            self.logger.info("requirements.txt successfully generated!")
+        except subprocess.CalledProcessError as e:
+            self.logger.info(f"Error occurred: {e}")
+            self.logger.info("Attempting to generate requirements.txt manually...")
+             
+            try:
+                all_imports = self.get_all_imports_from_directory(directory)
+                requirements = self.get_installed_versions(all_imports)
+
+                requirements_path  = os.path.join(directory,"requirements.txt")
+                # Write the requirements to a file
+                with open(requirements_path, 'w') as f:
+                    for req in requirements:
+                        f.write(f"{req}\n")
+
+                self.logger.info("requirements.txt file generated.")
+            except Exception as e:
+                self.logger.info(f"Error occurred while manually generating requirements.txt: {e}")
+    
+
+    def get_all_imports_from_directory(self,directory):
+        """Get all unique imports from all Python files in the directory."""
+        imports_set = set()
+        
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith(".py"):
+                    filepath = os.path.join(root, file)
+                    imports = self.get_imports_from_file(filepath)
+                    imports_set.update(imports)
+        
+        return sorted(imports_set)
+    
+    def get_imports_from_file(self,filepath):
+        """Extract all imports from a Python file."""
+        self.logger.info(f"Importing from file {filepath}")
+        with open(filepath, "r", encoding="utf-8") as file:
+            tree = ast.parse(file.read(), filename=filepath)
+        
+        imports = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    imports.append(alias.name.split('.')[0])  # Only get the base module
+            elif isinstance(node, ast.ImportFrom):
+                if node.module:
+                    imports.append(node.module.split('.')[0])  # Only get the base module
+        return imports
+
+    def get_installed_versions(self,imports):
+        """Get the installed versions of each imported package."""
+        installed_packages = {pkg.key: pkg.version for pkg in pkg_resources.working_set}
+        requirements = []
+        
+        for imp in imports:
+            if imp in installed_packages:
+                requirements.append(f"{imp}=={installed_packages[imp]}")
+            else:
+                requirements.append(imp)  # If version not found, just add the package name
+
+        return requirements
 
 # # NOTION TOOLS
 
