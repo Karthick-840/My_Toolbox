@@ -2,8 +2,10 @@ import re
 import pandas as pd
 
 class String_Functions:
-    def __init__(self):
-        pass
+    def __init__(self,logger=None):
+        if logger:
+            self.logger = logger.info('String Manipulation Tools Initiated.')
+            self.logger = logger.getChild(__name__)
         
     def convert_frequency(self,frequency):
         frequency_dict = {"monthly": 12,"quarterly": 4}

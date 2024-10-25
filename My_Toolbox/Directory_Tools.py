@@ -9,8 +9,9 @@ import zipfile
 class Data_Storage:
     
     def __init__(self,logger=None):
-        self.logger = logger.info('Data Storage Tools Initiated.')
-        self.logger = logger.getChild(__name__)
+        if logger:
+            self.logger = logger.info('Data Storage Tools Initiated.')
+            self.logger = logger.getChild(__name__)
        
     def upload_files(self, filepath):  # Better word is import files
         df = pd.DataFrame()  # Create an empty dataframe
@@ -22,12 +23,18 @@ class Data_Storage:
                 df = pd.read_csv(filepath, delimiter=',',skip_blank_lines=True)  # Use comma for CSV
             elif extension == "txt":
                 df = pd.read_csv(filepath, delimiter='\t', skip_blank_lines=True, skipinitialspace=True)  # Use tab for TXT
+            elif extension == "json":
+                df = pd.read_json(filepath)  # Read JSON file into a DataFrame
             else:
                 raise ValueError(f"Unsupported file extension: {extension}")
         except  FileNotFoundError:
             self.logger.info(f"Error: File not found at {filepath}") 
                
             pass  
+
+        except ValueError as e:
+            self.logger.info(str(e))
+            return df  # Return the empty DataFrame in case of an unsupported file type
 
         self.logger.info(f'{extension} file found & {filepath} is read to dataframe.')
         df = df.dropna(how='all') 
@@ -55,7 +62,7 @@ class Data_Storage:
             print(f"File '{path}' not found.")
             return None
             
-    def save_file(self,data,filepath):
+    def save_file(self,data,filepath,mode ='w'):
         try:
             if isinstance(data, (dict, list)):
                 data = pd.json_normalize(data)
@@ -67,7 +74,7 @@ class Data_Storage:
         try:           
             extension = filepath.split(".")[-1].lower()
             if extension == "csv":
-                data.to_csv(filepath, index=False)  # Use comma for CSV
+                data.to_csv(filepath, index=False,mode =mode)  # Use comma for CSV
             elif extension == "txt":
                 with open(filepath, 'w') as output:
                     output.write(data)

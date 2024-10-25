@@ -7,8 +7,11 @@ import json
 
 class Date_Manipulations:
 
-    def __init__(self):
+    def __init__(self,logger=None):
         self.today_str = datetime.today().strftime('%Y-%m-%d')
+        if logger:
+            self.logger = logger.info('Date Manipulation Tools Initiated.')
+            self.logger = logger.getChild(__name__)
 
     def update_end_date(self, text):
         
@@ -27,7 +30,7 @@ class Date_Manipulations:
                 return pd.to_datetime(date_str, format='%d-%b-%y').strftime('%Y-%m-%d')
             except Exception as e:
                 # Log the error with the row index and problematic date_str
-                print(f"Error converting date '{date_str}' in row {row_index}: {e}")
+                print(f"Error converting date '{date_str}': {e}")
                 raise e
 
     def string_to_datetime(self, text,format='%Y-%m-%d'):
@@ -139,34 +142,4 @@ class Date_Manipulations:
         return result
         
 
-# Time Tracking
-
-def start_timer(activity_name):
-  """Starts a timer for a given activity."""
-  start_time = time.time()
-  # Store activity name and start time in a database or file for later analysis
-  return start_time
-
-def stop_timer(activity_name):
-  """Stops a timer for a given activity."""
-  end_time = time.time()
-  # Retrieve start time from database or file
-  elapsed_time = end_time - start_time
-  # Store elapsed time, activity name, and other details in a database or file
-  return elapsed_time
-
-
-# Task management
-
-def add_task(task_name, due_date, priority):
-  """Adds a task with a name, due date, and priority."""
-  # Store task information in a database or file
-  pass
-
-def prioritize_tasks(tasks):
-  """Prioritizes tasks based on multiple criteria (e.g., due date, importance, dependencies)."""
-  # Implement prioritization logic based on desired criteria
-  sorted_tasks = sorted(tasks, key=lambda x: (x['due_date'], x['priority']))
-  return sorted_tasks
-   
      
