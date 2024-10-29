@@ -1,14 +1,14 @@
-.PHONY: build test install clean
+.PHONY: build test install clean upload check
 
-# Define variables
+# Define your Python interpreter
+PYTHON = python3
 PACKAGE_NAME = My_Toolbox
 SRC_DIR = My_Toolbox
 TEST_DIR = tests
+LINTER = pylint
+# Detect OS and define Python and pip commands based on OS
 
-# Detect OS
 OS := $(shell uname)
-
-# Define Python and pip commands based on OS
 ifeq ($(OS),Linux)
     PYTHON = python3
     PIP = pip3
@@ -22,21 +22,49 @@ else
     $(error Unsupported OS)
 endif
 
-# Build the package using setup.py
-build-setup: setup.py
-	@echo "Building the package using setup.py..."
-	$(PYTHON) setup.py sdist bdist_wheel
+# Define the source files or directories to lint
+SRC = My_Toolbox/*.py tests/*.py  # Adjust according to your project's structure
 
-# Run tests
+# Lint target
+lint:
+	@$(LINTER) $(SRC) || (echo "Linting failed"; exit 1)
+
+# Run tests using `nox`
 test:
-	@echo "Running tests..."
-	$(PYTHON) $(TEST_DIR)/run_tests.py
+	@echo "Running tests with nox..."
+	nox
+
+	
+# Build the package using `python -m build`
+build:
+	@echo "Checking for requirements.txt..."
+	@if [ ! -f requirements.txt ]; then echo "Error: requirements.txt not found."; exit 1; fi
+	@echo "Building the package with build module..."
+	$(PIP) install --upgrade build
+	$(PYTHON) -m build
+
+
+
 
 # Install the package locally
+# Install the package locally with requirements check
 install:
+	@echo "Checking for requirements.txt..."
+	@if [ ! -f requirements.txt ]; then echo "Error: requirements.txt not found."; exit 1; fi
 	@echo "Installing the package locally..."
 	$(PIP) install -r requirements.txt
 	$(PIP) install -e .
+
+
+# Upload the package using `twine`
+upload: build
+	@echo "Uploading the package with twine..."
+	$(PYTHON) -m twine upload dist/*
+
+# Check the package before uploading using `twine check`
+check:
+	@echo "Checking the package with twine..."
+	$(PYTHON) -m twine check dist/*
 
 # Clean up build artifacts
 clean:

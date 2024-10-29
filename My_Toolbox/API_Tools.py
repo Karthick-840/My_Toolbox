@@ -1,12 +1,5 @@
-import os
-import ast
-import json
 import time
 import requests
-import platform
-import subprocess
-#import pkg_resources
-
 
 class API_Tools:
     def __init__(self,logger):

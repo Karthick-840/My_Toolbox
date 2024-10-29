@@ -31,4 +31,8 @@ TODO:  @pytest,kark,parameterize (give thigns as area like  ("length, area",[(2,
 Best thign is mocking.
 
 when using Mock, use the decorator. like @mock.pathc("source.service.get_user_from_db")
+
+work on Nox
+work on makefile and do linting
+work on model paramters and make it score better
 """
