@@ -2,8 +2,8 @@
 
 # Define your Python interpreter
 PYTHON = python3
-PACKAGE_NAME = My_Toolbox
-SRC_DIR = My_Toolbox
+PACKAGE_NAME = my_toolbox
+SRC_DIR = my_toolbox
 TEST_DIR = tests
 LINTER = pylint
 # Detect OS and define Python and pip commands based on OS
@@ -23,7 +23,7 @@ else
 endif
 
 # Define the source files or directories to lint
-SRC = My_Toolbox/*.py tests/*.py  # Adjust according to your project's structure
+SRC = my_toolbox/*.py tests/*.py  # Adjust according to your project's structure
 
 # Lint target
 lint:
@@ -42,8 +42,6 @@ build:
 	@echo "Building the package with build module..."
 	$(PIP) install --upgrade build
 	$(PYTHON) -m build
-
-
 
 
 # Install the package locally

@@ -17,7 +17,7 @@ def lint(session):
     session.install("pylint")
     
     # Run pylint on the source and test directories
-    session.run("pylint", "My_Toolbox", "tests")
+    session.run("pylint", "my_toolbox", "tests")
 
 @nox.session
 def build(session):
