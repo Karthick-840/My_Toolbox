@@ -2,9 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
-My_Toolbox\My_Toolbox.egg-info
-My_Toolbox\src\__pycache__
-My_Toolbox\tests\__pycache__
+\My_Toolbox.egg-info
+\My_toolbox\__pycache__
+\tests\__pycache__
+.pytest_cache
 # C extensions
 *.so
 

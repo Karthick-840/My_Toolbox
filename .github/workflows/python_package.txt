@@ -1,0 +1,54 @@
+name: Python package
+
+on:
+  pull_request:
+    branches:
+      - main  # This will run on pull requests to the main branch
+  workflow_dispatch:  # Allows manual triggering of the workflow on any branch
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'  # Adjust to your required version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run linters
+        run: |
+          make lint  # Assuming you still want to run linting separately
+          pylint_score=$(python -c "import json; print(json.load(open('pylint_report.json'))['score'])")
+          echo "Pylint score: $pylint_score"
+          if (( $(echo "$pylint_score < 6" | bc -l) )); then
+              echo "Pylint score is below the threshold."
+              echo "Pylint failed."
+              exit 1
+          fi
+
+      - name: Run Nox sessions
+        run: |
+          python -m pip install nox  # Install nox
+          nox -s tests  # Run the tests session defined in noxfile.py
+
+      - name: Check test coverage
+        run: |
+          coverage=$(grep -oP '(?<=<coverage rate=")[0-9.]+(?=")' coverage.xml)
+          echo "Test coverage: $coverage%"
+          if (( $(echo "$coverage < 60" | bc -l) )); then
+              echo "Test coverage is below the threshold."
+              echo "Tests failed."
+              exit 1
+          fi

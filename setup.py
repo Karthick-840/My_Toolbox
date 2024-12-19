@@ -8,9 +8,9 @@ def read_requirements(file_path):
 
 setup(
     name="My_Toolbox",
-    version="1.0.3",  # Update this version as needed
+    version="1.1.0",  # Update this version as needed
     author="Karthick Jayaraman",
-    description="A useful set of tools for productivity",
+    description="A useful set of tools for productivity for API calls, PDF Operations, String, Date, Time manipulations, streamlit vishaulization, Log Tools and other project tools",
     url="https://github.com/Karthick-840/My_Toolbox",
     packages=find_packages(),  # Automatically find packages in the Tools directory
     install_requires=read_requirements("requirements.txt"),  # Read requirements from requirements.txt
