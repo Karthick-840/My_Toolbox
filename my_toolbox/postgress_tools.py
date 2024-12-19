@@ -6,8 +6,6 @@ import os
 import psycopg2
 from psycopg2 import sql
 
-
-
 class PostgreSQLDatabase:
     def __init__(self, db_name, user, password, host='localhost', port='5432'):
         self.db_name = db_name

@@ -1,16 +1,10 @@
 
 import os
-import ast
 import json
-import time
-import requests
 import platform
 import subprocess
 
-
-
-
-class Kaggle_Tools:
+class KaggleTools:
     def __init__(self, logger=None,kaggle_dir=None, move_to_read_only=True):
         if logger:
             self.logger = logger.info('Kaggle API is Initiated...')
@@ -24,7 +18,6 @@ class Kaggle_Tools:
     def apply(self,dataset_name):
         self.kaggle_auth()
         self.download_dataset(dataset_name)
-        
     
     def kaggle_auth(self):
         try:
@@ -36,7 +29,6 @@ class Kaggle_Tools:
                 self.logger.info("Proceeding to Credentails Import")
                 self.setup_kaggle_credentials()        
             
-
         except Exception as e:
             self.logger.info(f"Error setting up Kaggle credentials: {e}")
     

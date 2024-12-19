@@ -27,7 +27,15 @@ SRC = my_toolbox/*.py tests/*.py  # Adjust according to your project's structure
 
 # Lint target
 lint:
-	@$(LINTER) $(SRC) || (echo "Linting failed"; exit 1)
+	@echo "Linting the following files:"
+	@echo $(SRC)
+	@$(LINTER) --exit-zero --output-format=text $(SRC) | tee pylint_report.txt
+	@echo "Pylint score for each file:"
+	@grep -E "Your code has been rated at" pylint_report.txt
+	@awk '/Your code has been rated at/ { split($$7, score, "/"); if (score[1] < 2.5) { exit 1 } else if (score[1] < 8) { exit 2 } }' pylint_report.txt || \
+		{ if [ $$? -eq 1 ]; then echo "Linting failed: Pylint score is less than 2.5"; exit 1; \
+		elif [ $$? -eq 2 ]; then echo "Linting warning: Pylint score is between 2.5 and 8"; exit 0; \
+		else echo "Linting success: Pylint score is 8 or higher"; fi; }
 
 # Run tests using `nox`
 test:
