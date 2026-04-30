@@ -13,6 +13,8 @@ __pycache__/
 .venv_auditcheck
 .venv_auditcheck2
 .venv_reqcheck
+.venv*/
+**/.venv*/
 # Distribution / packaging
 .Python
 build/
