@@ -2,6 +2,7 @@
 import os
 import subprocess
 
+
 class GitTools:
     
     def __init__(self,logger=None):

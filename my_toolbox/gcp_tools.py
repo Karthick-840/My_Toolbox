@@ -1,14 +1,11 @@
-import os
-import base64
 import csv
-from datetime import datetime
-import json
+import os
 
 try:
     import gspread
+    from google.auth.exceptions import GoogleAuthError
     from google.oauth2.service_account import Credentials
     from gspread_dataframe import set_with_dataframe
-    from google.auth.exceptions import GoogleAuthError
 except Exception:  # pragma: no cover
     gspread = None
     Credentials = None
@@ -16,12 +13,23 @@ except Exception:  # pragma: no cover
     GoogleAuthError = Exception
 
 from pprint import pprint
+
 try:
-    from google.cloud import storage, datastore, bigquery
+    from google.cloud import bigquery, datastore, storage
 except Exception:  # pragma: no cover
     storage = None
     datastore = None
     bigquery = None
+
+try:
+    from google.cloud.exceptions import NotFound
+except Exception:  # pragma: no cover
+    NotFound = Exception
+
+try:
+    from google.oauth2 import service_account
+except Exception:  # pragma: no cover
+    service_account = None
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 

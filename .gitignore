@@ -8,7 +8,11 @@ __pycache__/
 .pytest_cache
 # C extensions
 *.so
-
+.venv_pkg_test
+.ruff_cache
+.venv_auditcheck
+.venv_auditcheck2
+.venv_reqcheck
 # Distribution / packaging
 .Python
 build/

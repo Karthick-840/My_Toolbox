@@ -1,6 +1,7 @@
 import logging
 import os
 
+
 class Logger:
   
     loglevel_dict = {
@@ -17,7 +18,6 @@ class Logger:
         'CRITICAL': logging.CRITICAL,
         50: logging.CRITICAL,
         'UPDATE': logging.CRITICAL,
-        50: logging.CRITICAL
     }
 
     def __init__(self, name_logger, logging_level, filename=None, filemode='a'):

@@ -1,15 +1,18 @@
 import os
-from PyPDF2 import PdfReader, PdfWriter, PdfMerger
+
+from pdfminer.high_level import extract_text
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from pdfminer.high_level import extract_text
 try:
     import fitz  # PyMuPDF
 except Exception:  # pragma: no cover
     fitz = None
-from PIL import Image  # Pillow
 import io
+
+from PIL import Image  # Pillow
+
 try:
     import tabula
 except Exception:  # pragma: no cover

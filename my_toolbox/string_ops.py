@@ -1,5 +1,5 @@
 import re
-import pandas as pd
+
 
 class String_Functions:
     def __init__(self,logger=None):

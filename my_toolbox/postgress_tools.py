@@ -1,10 +1,9 @@
-from sqlalchemy import create_engine
-from sqlalchemy.engine import URL
-import pandas as pd
-import os
 
+import pandas as pd
 import psycopg2
 from psycopg2 import sql
+from sqlalchemy import create_engine
+
 
 class PostgreSQLDatabase:
     def __init__(self, db_name, user, password, host='localhost', port='5432'):

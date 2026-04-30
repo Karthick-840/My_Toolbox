@@ -6,11 +6,18 @@ It includes functionalities for uploading, saving, and retrieving file informati
 as well as extracting ZIP files.
 
 """
-import os
-import json
 import datetime
+import json
+import os
 import zipfile
+
 import pandas as pd
+
+try:
+    from openpyxl.utils.dataframe import dataframe_to_rows
+except Exception:  # pragma: no cover
+    dataframe_to_rows = None
+
 
 class DataStorage:
     """
@@ -88,6 +95,11 @@ class DataStorage:
                 with open(filepath, mode, encoding='utf-8') as f:
                     json.dump(data, f)
             else:
+                if dataframe_to_rows is None:
+                    raise ImportError(
+                        "openpyxl is required for Excel export. "
+                        "Install with: pip install openpyxl"
+                    )
                 with pd.ExcelWriter(filepath) as writer:
                     for sheet_name, df in data.items():
                         sheet = writer.book.create_sheet(sheet_name)
