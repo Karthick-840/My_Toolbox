@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 
-class Date_Manipulations:
+class DateFunctions:
 
     def __init__(self,logger=None):
         self.today_str = datetime.today().strftime('%Y-%m-%d')
