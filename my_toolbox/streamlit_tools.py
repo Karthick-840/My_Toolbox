@@ -3,6 +3,20 @@ credits to Data Professor - https://github.com/dataprofessor/multi-page-app
 """
 import streamlit as st
 
+try:
+    from streamlit_option_menu import option_menu
+except ImportError:  # pragma: no cover
+    option_menu = None
+
+
+def _require_option_menu():
+    if option_menu is None:
+        raise ImportError(
+            "streamlit_option_menu is required for menu rendering. "
+            "Install with: pip install streamlit-option-menu"
+        )
+
+
 class MultiApp:
     """Framework for combining multiple streamlit applications.
     Usage:
@@ -84,6 +98,7 @@ class StreamlitMenu:
         st.write(f"You selected: {selected_option}")
 
     def sidebar_menu(self):
+        _require_option_menu()
         with st.sidebar:
             selected = option_menu("Main Menu", self.options, 
                                    icons=self.icons, 
@@ -92,6 +107,7 @@ class StreamlitMenu:
         return selected
 
     def horizontal_menu(self):
+        _require_option_menu()
         selected = option_menu(None, self.options, 
                                icons=self.icons, 
                                menu_icon="cast", 
@@ -100,6 +116,7 @@ class StreamlitMenu:
         return selected
 
     def css_styled_menu(self):
+        _require_option_menu()
         selected = option_menu(None, self.options, 
                                icons=self.icons, 
                                menu_icon="cast", 
@@ -109,6 +126,7 @@ class StreamlitMenu:
         return selected
 
     def manual_selection_menu(self):
+        _require_option_menu()
         if st.session_state.get('switch_button', False):
             st.session_state['menu_option'] = (st.session_state.get('menu_option', 0) + 1) % len(self.options)
             manual_select = st.session_state['menu_option']
@@ -123,30 +141,40 @@ class StreamlitMenu:
         st.button(f"Move to Next {st.session_state.get('menu_option', 1)}", key='switch_button')
         return selected
 
-# Example of how to use the class
-options = ["Home", "Upload", "Tasks", "Settings"]
-icons = ['house', 'cloud-upload', "list-task", 'gear']
-menu_type = "Horizontal"  # You can change this to "Sidebar", "Horizontal", or "Manual Selection"
-css_styles = {
-    "container": {"padding": "0!important", "background-color": "#fafafa"},
-    "icon": {"color": "orange", "font-size": "25px"}, 
-    "nav-link": {"font-size": "25px", "text-align": "left", "margin": "0px", "--hover-color": "#eee"},
-    "nav-link-selected": {"background-color": "green"},
-}
-
-# Create an instance of the menu
-menu = StreamlitMenu(options, icons, menu_type, css_styles)
-menu.display_menu()
-
-    # 5. Add on_change callback
 def on_change(key):
     selection = st.session_state[key]
     st.write(f"Selection changed to {selection}")
-    
-selected5 = option_menu(None, ["Home", "Upload", "Tasks", 'Settings'],
-                        icons=['house', 'cloud-upload', "list-task", 'gear'],
-                        on_change=on_change, key='menu_5', orientation="horizontal")
-selected5
+
+
+def demo_menu():
+    _require_option_menu()
+
+    options = ["Home", "Upload", "Tasks", "Settings"]
+    icons = ['house', 'cloud-upload', "list-task", 'gear']
+    menu_type = "Horizontal"
+    css_styles = {
+        "container": {"padding": "0!important", "background-color": "#fafafa"},
+        "icon": {"color": "orange", "font-size": "25px"},
+        "nav-link": {"font-size": "25px", "text-align": "left", "margin": "0px", "--hover-color": "#eee"},
+        "nav-link-selected": {"background-color": "green"},
+    }
+
+    menu = StreamlitMenu(options, icons, menu_type, css_styles)
+    menu.display_menu()
+
+    selected = option_menu(
+        None,
+        ["Home", "Upload", "Tasks", 'Settings'],
+        icons=['house', 'cloud-upload', "list-task", 'gear'],
+        on_change=on_change,
+        key='menu_5',
+        orientation="horizontal",
+    )
+    return selected
+
+
+if __name__ == "__main__":
+    demo_menu()
   
 
 

@@ -1,15 +1,73 @@
-[tool.poetry]
-name = "my-toolbox"
-version = "0.1.0"
-description = "Primary commit with major changes"
-authors = ["Your Name <you@example.com>"]
-license = "MIT"
-readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.11"
-
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my-toolbox"
+version = "1.1.0"
+description = "A useful set of tools for API calls, PDF operations, string/date utilities, streamlit visualizations, log tools, and project helpers."
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+  { name = "Karthick Jayaraman" }
+]
+keywords = ["toolbox", "utilities", "pdf", "streamlit", "gcp"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent"
+]
+dependencies = [
+  "PyMuPDF==1.24.10",
+  "gspread==6.1.4",
+  "gspread_dataframe==4.0.0",
+  "google-api-python-client==2.149.0",
+  "google-auth==2.23.0",
+  "google-auth-httplib2==0.2.0",
+  "google-auth-oauthlib==1.2.1",
+  "google-cloud-bigquery==3.10.0",
+  "google-cloud-datastore==2.10.0",
+  "google-cloud-storage==2.10.0",
+  "kaggle==1.6.17",
+  "pandas==2.2.3",
+  "pdfminer==20191125",
+  "pdfminer.six==20240706",
+  "Pillow==10.0.0",
+  "protobuf==4.25.5",
+  "psycopg2==2.9.10",
+  "PyPDF2==3.0.1",
+  "reportlab==4.2.2",
+  "Requests==2.32.3",
+  "SQLAlchemy==2.0.36",
+  "streamlit==1.39.0",
+  "streamlit-option-menu==0.4.0",
+  "tabula_py==2.9.3"
+]
+
+[project.urls]
+Homepage = "https://github.com/Karthick-840/My_Toolbox"
+Repository = "https://github.com/Karthick-840/My_Toolbox"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2",
+  "pytest-cov>=5.0",
+  "ruff>=0.6.0",
+  "build>=1.2.1",
+  "twine>=5.1.1",
+  "pip-audit>=2.7.3"
+]
+
+[tool.setuptools.packages.find]
+include = ["my_toolbox*"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
