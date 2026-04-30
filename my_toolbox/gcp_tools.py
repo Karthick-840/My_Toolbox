@@ -2,33 +2,65 @@ import os
 import base64
 import csv
 from datetime import datetime
-
-import gspread
-from google.auth.transport.requests import Request
-from google.oauth2.service_account import Credentials
-from gspread_dataframe import set_with_dataframe
-from google.auth.exceptions import GoogleAuthError
-from google.cloud.exceptions import NotFound
-from google.oauth2 import service_account
 import json
 
+try:
+    import gspread
+    from google.oauth2.service_account import Credentials
+    from gspread_dataframe import set_with_dataframe
+    from google.auth.exceptions import GoogleAuthError
+except Exception:  # pragma: no cover
+    gspread = None
+    Credentials = None
+    set_with_dataframe = None
+    GoogleAuthError = Exception
+
 from pprint import pprint
-from google.cloud import storage, datastore, bigquery
+try:
+    from google.cloud import storage, datastore, bigquery
+except Exception:  # pragma: no cover
+    storage = None
+    datastore = None
+    bigquery = None
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
+
+def _require_google_sheets_deps():
+    if not all([gspread, Credentials, set_with_dataframe]):
+        raise ImportError(
+            "Google Sheets dependencies are missing. "
+            "Install requirements with: pip install -r requirements.txt"
+        )
+
+
+def _require_google_cloud_storage_deps():
+    if storage is None:
+        raise ImportError(
+            "google-cloud-storage dependency is missing. "
+            "Install requirements with: pip install -r requirements.txt"
+        )
+
 class GoogleSheets:
     def __init__(self,sheet_id,settings=None,logger=None,scopes=None):
+        _require_google_sheets_deps()
+        self.logger = logger
         
-        self.SF = settings.SF
-        self.DS = settings.DS
-        self.DATE = settings.DATE
+        if settings is not None:
+            self.SF = settings.SF
+            self.DS = settings.DS
+            self.DATE = settings.DATE
+            self.input_folder = settings.INPUT_FOLDER
+            self.output_folder = settings.OUTPUT_FOLDER
+        else:
+            self.SF = None
+            self.DS = None
+            self.DATE = None
+            self.input_folder = None
+            self.output_folder = None
         
-        self.input_folder = settings.INPUT_FOLDER
-        self.output_folder = settings.OUTPUT_FOLDER
-
         if logger:
-            self.logger = logger.info('IGspread Function Initiated')
+            logger.info('IGspread Function Initiated')
             self.logger = logger.getChild(__name__)
         
         self.sheet_id = sheet_id
@@ -46,18 +78,22 @@ class GoogleSheets:
                 creds = Credentials.from_service_account_file(token_path, scopes=scopes)
                 client = gspread.authorize(creds)
                 sheet = client.open_by_key(sheet_id)
-                self.logger.info("Authentication successful.")
+                if self.logger:
+                    self.logger.info("Authentication successful.")
                 
             else:
-                self.logger.info(" Authentication Token is missing")     
+                if self.logger:
+                    self.logger.info(" Authentication Token is missing")
             
         except GoogleAuthError as auth_error:
             # If there's an authentication error, return the error message
-           self.logger.info(f"Authentication failed: {str(auth_error)}")
+           if self.logger:
+               self.logger.info(f"Authentication failed: {str(auth_error)}")
         
         except Exception as e:
             # Handle any other errors that may occur
-            self.logger.info(f"An error occurred: {str(e)}")
+            if self.logger:
+                self.logger.info(f"An error occurred: {str(e)}")
 
         return sheet
 
@@ -102,6 +138,7 @@ class GoogleSheets:
 
 class GoogleCloudStorage:
     def __init__(self, credentials_path, project=None):
+        _require_google_cloud_storage_deps()
         """
         Initialize the Google Cloud Storage client.
         :param credentials_path: Path to the Google Cloud credentials JSON file.

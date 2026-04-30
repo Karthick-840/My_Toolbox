@@ -1,13 +1,29 @@
 import os
-from PyPDF2 import Pdf_file, PdfWriter, PdfMerger
+from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from pdfminer.high_level import extract_pages,extract_text
-import fitz # PyMuPDF
+from pdfminer.high_level import extract_text
+try:
+    import fitz  # PyMuPDF
+except Exception:  # pragma: no cover
+    fitz = None
 from PIL import Image  # Pillow
 import io
-import tabula
+try:
+    import tabula
+except Exception:  # pragma: no cover
+    tabula = None
+
+
+def _require_fitz():
+    if fitz is None:
+        raise ImportError("PyMuPDF is required for this operation. Install with: pip install PyMuPDF")
+
+
+def _require_tabula():
+    if tabula is None:
+        raise ImportError("tabula-py is required for table extraction. Install with: pip install tabula-py")
 
 class PDFAccess:
     def __init__(self, input_path="/inputs", output_path="/outputs"):
@@ -29,18 +45,19 @@ class PDFAccess:
 
     def read_pdf(self,file_name):
         file_path = os.path.join(self.input_path,file_name)
-        pdf_file = Pdfpdf_file(file_path)
+        pdf_file = PdfReader(file_path)
         return pdf_file
 
-    def write_text_to_pdf(self, content, x = 100, y= 750 ):
-        # Define the starting position which You can adjust and Create a canvas to write on
-        pdf_canvas = canvas.Canvas(self.file_path, pagesize=letter)
+    def write_text_to_pdf(self, output_file_name, content, x = 100, y= 750 ):
+        file_path = os.path.join(self.output_path, output_file_name)
+        pdf_canvas = canvas.Canvas(file_path, pagesize=letter)
         pdf_canvas.drawString(x, y, content)
         pdf_canvas.save()
+        return file_path
 
 class PDF_Extract(PDFAccess):
     def __init__(self, input_path="/inputs", output_path="/outputs"):
-        PDF_Access.__init__(self, input_path, output_path)
+        super().__init__(input_path, output_path)
 
     def complete_text_extract(self,file_name,pattern=None):
         file_path = os.path.join(self.input_path,file_name)
@@ -52,8 +69,7 @@ class PDF_Extract(PDFAccess):
             return text
 
     def pagewise_text_extract(self,file_name,pattern=None,page_num=None):
-        file_path =  os.path.join(self.input_path,file_name)
-        pdf_file = PDF_Access().read_pdf(file_path)
+        pdf_file = self.read_pdf(file_name)
         text_by_page = {}
         # If page_num is provided, extract text only from that page
         if page_num is not None:
@@ -72,6 +88,7 @@ class PDF_Extract(PDFAccess):
         return text_by_page
 
     def extract_images(self,file_name):
+        _require_fitz()
         file_path = os.path.join(self.input_path,file_name)
         pdf_file = fitz.open(file_path)
         counter =1
@@ -84,11 +101,14 @@ class PDF_Extract(PDFAccess):
                 image_data = base_img["image"]
                 img = Image.open(io.BytesIO(image_data))
                 extension = base_img['ext']
-                output_image_path = f"image-{file_name}-{counter}.{extension}"
+                output_image_path = os.path.join(
+                    self.output_path, f"image-{file_name}-{counter}.{extension}"
+                )
                 img.save(open(output_image_path,"wb"))
                 counter +=1
 
     def extract_tables(self,file_name):
+        _require_tabula()
         file_path = os.path.join(self.input_path,file_name)
         tables = tabula.read_pdf(file_path,pages = "all")
         print(tables)
@@ -96,7 +116,7 @@ class PDF_Extract(PDFAccess):
 
 class PDF_Manipulate(PDFAccess):
     def __init__(self, input_path="/inputs", output_path="/outputs"):
-        PDF_Access.__init__(self, input_path, output_path)
+        super().__init__(input_path, output_path)
 
     def merge_pdfs(self, merge_files_path=None, merge_dict=None,output_file_name='output_file'):
 
@@ -104,8 +124,8 @@ class PDF_Manipulate(PDFAccess):
             merge_dict = self.list_pdf_files(list_path=merge_files_path)
         pdf_merger = PdfMerger()
         for name in merge_dict:
-            pdf = self.read_pdf(name)
-            pdf_merger.append(pdf)
+            file_path = os.path.join(self.input_path, name)
+            pdf_merger.append(file_path)
         with open(output_file_name+'.pdf', 'wb') as output:
             pdf_merger.write(output)
 
@@ -124,11 +144,12 @@ class PDF_Manipulate(PDFAccess):
             print(f"Error processing file {split_file_name}: {e}")
 
     def move_empty_pdfs(self, empty_folder='./empty',delete=False):
+        _require_fitz()
     # Ensure the empty_folder exists
         os.makedirs(empty_folder, exist_ok=True)
         file_list = self.list_pdf_files(list_path=self.input_path)
         for file_name in file_list:
-            file_path = os.path.join(self.input_folder, file_name)
+            file_path = os.path.join(self.input_path, file_name)
             try:
                 # Open the PDF file
                 pdf_document = fitz.open(file_path)
@@ -140,17 +161,17 @@ class PDF_Manipulate(PDFAccess):
                     if text.strip():  # Check if there's any text
                         text_found = True
                         break
-                    pdf_document.close()  # Explicitly close the PDF file
+                pdf_document.close()
 
-                    if not text_found: # Move to the empty_folder or delete the empty PDF
-                        if delete:
-                            os.remove(file_path)
-                            print(f"Deleted empty file: {file_name}")
-                        else:
-                            os.rename(file_path, os.path.join(empty_folder, file_name))   
-                            print(f"Moved empty file: {file_name}")
+                if not text_found: # Move to the empty_folder or delete the empty PDF
+                    if delete:
+                        os.remove(file_path)
+                        print(f"Deleted empty file: {file_name}")
                     else:
-                        print(f"File {file_name} contains text")
+                        os.rename(file_path, os.path.join(empty_folder, file_name))
+                        print(f"Moved empty file: {file_name}")
+                else:
+                    print(f"File {file_name} contains text")
 
             except Exception as e:
                 print(f"Error processing file {file_name}: {e}")
@@ -161,16 +182,15 @@ class PDF_Manipulate(PDFAccess):
         if rename:
         # Iterate over sorted files and rename them
             for index, filename in enumerate(files):
-                file_extension = os.path.splitext(filename)[1]
                 new_filename = f"{index + 1:04d}_{filename}"
-                old_path = os.path.join(input_path, filename)
-                new_path = os.path.join(input_path, new_filename)
+                old_path = os.path.join(self.input_path, filename)
+                new_path = os.path.join(self.input_path, new_filename)
                 os.rename(old_path, new_path)
                 print(f"Renamed '{filename}' to '{new_filename}'")
 
     def combine_pdfs(self, output_filename, pdf_order):
         # Ensure the output folder exists
-        os.makedirs(output_folder, exist_ok=True)
+        os.makedirs(self.output_path, exist_ok=True)
 
         for output_filename, file_sequence in pdf_order.items():
             writer = PdfWriter()
