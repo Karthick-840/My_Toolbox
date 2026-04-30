@@ -1,7 +1,11 @@
-import os
-import pandas as pd
 import argparse
-from my_toolbox import log_tools, api_tools
+import os
+
+import pandas as pd
+
+from my_toolbox.git_tools import GitTools
+from my_toolbox.kaggle_tools import KaggleTools
+from my_toolbox.log_tools import Logger
 
 if __name__ == "__main__":
     
@@ -10,10 +14,20 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Creating a Project.")
 
     # Add multiple arguments
-    parser.add_argument("--repo_name", type=str, help="Name of the Repo you want to create")
-    parser.add_argument("--folder_path", type=str, help="Give the folder path where the Repo is to be created locally")
-    parser.add_argument("--remote_url", type=str, help="Give in the URL of the Remote Github Repo")
-    parser.add_argument("--kaggle_dataset", type=str, help="Give in the URL of the Remote Github Repo")
+    parser.add_argument(
+        "--repo_name", type=str, help="Name of the Repo you want to create"
+    )
+    parser.add_argument(
+        "--folder_path",
+        type=str,
+        help="Folder path where the Repo is to be created locally",
+    )
+    parser.add_argument(
+        "--remote_url", type=str, help="URL of the Remote Github Repo"
+    )
+    parser.add_argument(
+        "--kaggle_dataset", type=str, help="URL of the Kaggle Dataset"
+    )
 
 
     # Parse the arguments
@@ -34,7 +48,12 @@ if __name__ == "__main__":
     if not os.path.exists(repo_path):
         os.makedirs(repo_path)      # Create the directory if it doesn't exist
 
-    logger = Log_Tools.Logger(f'Logger Initiated','INFO',filename=f'{repo_path}/Log-{today}.log',filemode='w').logger
+    logger = Logger(
+        'Logger Initiated',
+        'INFO',
+        filename=f'{repo_path}/Log-{today}.log',
+        filemode='w'
+    ).logger
     logger = logger.getChild(__name__)
     logger.info(f'{args.repo_name} Project is Initiated')
     
@@ -42,10 +61,10 @@ if __name__ == "__main__":
 
     logger.info(f"Inside the repo Directory '{args.repo_name}' ")
     
-    git_tools = API_Tools.Git_Tools(logger)
+    git_tools = GitTools(logger)
     git_tools.create_local_repo(args.repo_name, folder_path=folder_path,remote_url=remote_url)
     
     if args.kaggle_dataset:
-        kaggle_tools = API_Tools.Kaggle_Tools(logger)
+        kaggle_tools = KaggleTools(logger)
         kaggle_tools.apply(args.kaggle_dataset)
         logger.info(f'{args.kaggle_dataset} is downloaded')
