@@ -1,7 +1,7 @@
 import re
 
 
-class String_Functions:
+class StringFunctions:
     def __init__(self,logger=None):
         if logger:
             self.logger = logger.info('String Manipulation Tools Initiated.')
