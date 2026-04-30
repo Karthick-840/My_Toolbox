@@ -76,8 +76,4 @@ class String_Functions:
         return summary_df
 
     
-    
-    
-     
-    
      
