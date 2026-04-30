@@ -57,20 +57,21 @@ class Date_Manipulations:
       # Convert string to datetime object
       #date = datetime.strptime(date, '%Y-%m-%d')
       
-      date = self.string_to_datetime(date, format='%Y-%m-%d')
+        date = self.string_to_datetime(date, format='%Y-%m-%d')
 
-      # Check if weekend (Saturday or Sunday)
-      if date.isocalendar()[1] in [6, 7]:
-      # Calculate next Monday's date
-        offset_days = (calendar.MONDAY - date.isocalendar()[1]) % 7
-        next_monday = date + timedelta(days=offset_days)
-      else:
-        # Weekday, return original date
-        next_monday = date
+        # Check if weekend (Saturday or Sunday)
+        # Check if weekend (Saturday or Sunday)
+        if date.isocalendar()[2] in [6, 7]:  # Correctly check for Saturday (6) and Sunday (7)
+            # Calculate next Monday's date
+            offset_days = (7 - date.isocalendar()[2]) + 1
+            next_monday = date + timedelta(days=offset_days)
+        else:
+            # Weekday, return original date
+            next_monday = date
 
-      # Format the date as 'YYYY-MM-DD'
-      return next_monday.strftime("%Y-%m-%d")
-    
+        # Format the date as 'YYYY-MM-DD'
+        return next_monday.strftime("%Y-%m-%d")
+        
     def date_generator(self,sdate,edate,delay=0):
         
         sdate = self.string_to_datetime(sdate)
@@ -110,8 +111,10 @@ class Date_Manipulations:
     def merge_on_closest_date(self,no_nav_df, nav_history):
         
         # Convert the 'date' columns to datetime format
-        no_nav_df['date'] = pd.to_datetime(no_nav_df['date'])
-        nav_history['date'] = pd.to_datetime(nav_history['date'])
+        no_nav_df.loc[:, 'date'] = pd.to_datetime(no_nav_df['date'])
+        nav_history.loc[:, 'date'] = pd.to_datetime(nav_history['date'])
+
+        
          # Sort by 'date' only
         no_nav_df = no_nav_df.sort_values(by='date')
         nav_history = nav_history.sort_values(by='date')
@@ -121,6 +124,8 @@ class Date_Manipulations:
             
         return merged_df
     
+   
+
     def merge_schemes_on_closest_date(self,no_nav_df, nav_history):
         
         result_list = []
