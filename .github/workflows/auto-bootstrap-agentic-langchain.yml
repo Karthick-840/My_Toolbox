@@ -29,6 +29,7 @@ on:
 
 env:
   PYTHON_VERSION: '3.11'
+  DEFAULT_PHASE: 'phase-0-1-contracts'
 
 jobs:
   # ──────────────────────────────────────────────────────────────────────────
@@ -51,20 +52,31 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Generate Phase 0-1 Code (Contracts + Registry)
-        if: github.event.inputs.phase == 'phase-0-1-contracts' || github.event_name == 'schedule'
+        if: github.event_name == 'push' || github.event_name == 'schedule' || github.event.inputs.phase == 'phase-0-1-contracts'
         id: generate
         run: |
-          python scripts/bootstrap_generator.py --phase phase-0-1-contracts
+          PHASE="${{ github.event.inputs.phase }}"
+          if [ -z "$PHASE" ]; then
+            PHASE="${{ env.DEFAULT_PHASE }}"
+          fi
+
+          python scripts/bootstrap_generator.py --phase "$PHASE"
           
           # Collect generated files for next steps
           if [ -f "BOOTSTRAP_MANIFEST.txt" ]; then
             cp BOOTSTRAP_MANIFEST.txt BOOTSTRAP_FILES.txt
+          else
+            touch BOOTSTRAP_FILES.txt
           fi
 
       - name: List Generated Files
         run: |
           echo "Generated files:"
-          cat BOOTSTRAP_FILES.txt
+          if [ -s "BOOTSTRAP_FILES.txt" ]; then
+            cat BOOTSTRAP_FILES.txt
+          else
+            echo "(none)"
+          fi
 
       - name: Commit Generated Code
         run: |
@@ -72,12 +84,12 @@ jobs:
           git config user.email "actions@github.com"
           
           # Check if there are changes
-          if git diff --quiet; then
+          if [ -z "$(git status --short)" ]; then
             echo "ℹ No changes (files already exist)"
             exit 0
           fi
           
-          git add agentic_toolbox/ langchain_adapters/ 2>/dev/null || true
+          git add agentic_toolbox/ langchain_adapters/ BOOTSTRAP_MANIFEST.txt BOOTSTRAP_FILES.txt 2>/dev/null || true
           git commit -m "bootstrap: auto-generate Phase 0-1 code (contracts + registry)" \
             --author="GitHub Actions <actions@github.com>" || echo "ℹ No changes to commit"
 

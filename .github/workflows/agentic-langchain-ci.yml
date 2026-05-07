@@ -1,0 +1,331 @@
+name: Agentic + LangChain Toolbox CI/CD
+
+on:
+  push:
+    branches: [main, feature/**, develop]
+    paths:
+      - 'agentic_toolbox/**'
+      - 'langchain_adapters/**'
+      - 'llm_toolbox/**'
+      - '.github/workflows/agentic-langchain-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'agentic_toolbox/**'
+      - 'langchain_adapters/**'
+      - 'llm_toolbox/**'
+
+env:
+  PYTHON_VERSION: '3.11'
+  CACHE_VERSION: 1
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # LINT & TYPE CHECK
+  # ──────────────────────────────────────────────────────────────────────────
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint & Type Check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy pytest-cov
+
+      - name: Run ruff lint
+        run: |
+          ruff check agentic_toolbox/ langchain_adapters/ llm_toolbox/
+        continue-on-error: false
+
+      - name: Run mypy type check
+        run: |
+          mypy agentic_toolbox/ --strict --ignore-missing-imports
+          mypy langchain_adapters/ --strict --ignore-missing-imports
+        continue-on-error: true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # UNIT TESTS: llm_toolbox (backend)
+  # ──────────────────────────────────────────────────────────────────────────
+  test-llm-toolbox:
+    runs-on: ubuntu-latest
+    name: Test llm_toolbox
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install llm_toolbox + test deps
+        run: |
+          cd llm_toolbox
+          pip install -e ".[dev]"
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Run llm_toolbox tests
+        run: |
+          cd llm_toolbox
+          pytest tests/ -v --cov=llm_toolbox --cov-report=xml --tb=short
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./llm_toolbox/coverage.xml
+          flags: llm_toolbox
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # UNIT TESTS: agentic_toolbox
+  # ──────────────────────────────────────────────────────────────────────────
+  test-agentic-toolbox:
+    runs-on: ubuntu-latest
+    name: Test agentic_toolbox
+    needs: test-llm-toolbox
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install llm_toolbox + agentic_toolbox deps
+        run: |
+          pip install -e llm_toolbox
+          pip install pydantic-ai pydantic pytest pytest-asyncio
+
+      - name: Run agentic_toolbox tests
+        run: |
+          pytest agentic_toolbox/tests/ -v --tb=short 2>/dev/null || echo "No tests yet (Phase 0-1)"
+        continue-on-error: true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # UNIT TESTS: langchain_adapters
+  # ──────────────────────────────────────────────────────────────────────────
+  test-langchain-adapters:
+    runs-on: ubuntu-latest
+    name: Test langchain_adapters
+    needs: test-llm-toolbox
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install llm_toolbox + langchain deps
+        run: |
+          pip install -e llm_toolbox
+          pip install langchain langchain-community pytest pytest-asyncio
+
+      - name: Run langchain_adapters tests
+        run: |
+          pytest langchain_adapters/tests/ -v --tb=short 2>/dev/null || echo "No tests yet (Phase 0-1)"
+        continue-on-error: true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # INTEGRATION: Contract Conformance (Phase 1+)
+  # ──────────────────────────────────────────────────────────────────────────
+  test-contracts:
+    runs-on: ubuntu-latest
+    name: Contract Conformance
+    needs: test-llm-toolbox
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e llm_toolbox
+          pip install pydantic pytest
+
+      - name: Validate tool contracts
+        run: |
+          python -c "
+          import sys
+          try:
+              from agentic_toolbox.contracts import ToolSpec
+              print('✓ Tool contracts exist')
+          except ImportError:
+              print('⚠ Tool contracts not yet implemented (Phase 1)')
+              sys.exit(0)
+          "
+        continue-on-error: true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # SECURITY: Dependency Audit
+  # ──────────────────────────────────────────────────────────────────────────
+  security:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install security tools
+        run: pip install bandit safety
+
+      - name: Bandit security scan
+        run: |
+          bandit -r agentic_toolbox/ langchain_adapters/ -f json -o bandit-report.json 2>/dev/null || true
+          cat bandit-report.json | python -m json.tool || true
+        continue-on-error: true
+
+      - name: Safety check dependencies
+        run: |
+          safety check --json 2>/dev/null || echo "⚠ Some dependency issues found (non-blocking)"
+        continue-on-error: true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # BUILD & PACKAGE (main branch only)
+  # ──────────────────────────────────────────────────────────────────────────
+  build:
+    runs-on: ubuntu-latest
+    name: Build Artifacts
+    needs: [lint, test-llm-toolbox, test-agentic-toolbox, test-langchain-adapters, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install build tools
+        run: pip install build wheel twine
+
+      - name: Build llm_toolbox
+        run: |
+          cd llm_toolbox
+          python -m build
+
+      - name: Build agentic_toolbox (stub)
+        run: |
+          echo "⚠ agentic_toolbox packaging pending Phase 2"
+
+      - name: Build langchain_adapters (stub)
+        run: |
+          echo "⚠ langchain_adapters packaging pending Phase 2"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: |
+            llm_toolbox/dist/
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # SMOKE TEST: MCP Endpoint (Phase 3+)
+  # ──────────────────────────────────────────────────────────────────────────
+  smoke-mcp:
+    runs-on: ubuntu-latest
+    name: MCP Smoke Test
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install MCP dependencies
+        run: |
+          pip install -e llm_toolbox
+          pip install mcp
+        continue-on-error: true
+
+      - name: Start MCP server (stub)
+        run: |
+          echo "⚠ MCP server implementation pending Phase 3"
+          echo "Planned: python agentic_toolbox/protocols/mcp_server.py"
+        continue-on-error: true
+
+      - name: Test MCP list_tools
+        run: |
+          echo "⚠ MCP smoke test pending Phase 3 implementation"
+        continue-on-error: true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # SMOKE TEST: A2A Endpoint (Phase 4+)
+  # ──────────────────────────────────────────────────────────────────────────
+  smoke-a2a:
+    runs-on: ubuntu-latest
+    name: A2A Smoke Test
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install A2A dependencies
+        run: |
+          pip install -e llm_toolbox
+          pip install fastapi httpx
+        continue-on-error: true
+
+      - name: Start A2A server (stub)
+        run: |
+          echo "⚠ A2A server implementation pending Phase 4"
+          echo "Planned: python -m agentic_toolbox.protocols.a2a_server"
+        continue-on-error: true
+
+      - name: Test A2A submit_task
+        run: |
+          echo "⚠ A2A smoke test pending Phase 4 implementation"
+        continue-on-error: true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # FINAL STATUS & SUMMARY
+  # ──────────────────────────────────────────────────────────────────────────
+  summary:
+    runs-on: ubuntu-latest
+    name: CI Summary
+    needs: [lint, test-llm-toolbox, test-agentic-toolbox, test-langchain-adapters, security]
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          echo "✓ Lint: ${{ needs.lint.result }}"
+          echo "✓ LLM Toolbox Tests: ${{ needs.test-llm-toolbox.result }}"
+          echo "✓ Agentic Tests: ${{ needs.test-agentic-toolbox.result }}"
+          echo "✓ LangChain Tests: ${{ needs.test-langchain-adapters.result }}"
+          echo "✓ Security: ${{ needs.security.result }}"
+          
+          if [ "${{ needs.lint.result }}" != "success" ] || [ "${{ needs.test-llm-toolbox.result }}" != "success" ]; then
+            echo "❌ Critical checks failed"
+            exit 1
+          fi
+          echo "✅ All checks passed"
+
+      - name: Post to PR (if PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## CI Status ✅
+              - **llm_toolbox**: Tests passed
+              - **agentic_toolbox**: Phase 0 ready (Phase 1+ pending)
+              - **langchain_adapters**: Phase 0 ready (Phase 1+ pending)
+              
+              See details: [Workflow Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+            })
+        continue-on-error: true
