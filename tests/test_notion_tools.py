@@ -1,65 +1,78 @@
 import my_toolbox.notion_tools as notion_tools
 
 
-def test_init_requires_token_and_database(monkeypatch):
+def test_notion_master_requires_token(monkeypatch):
     monkeypatch.delenv("NOTION_TOKEN", raising=False)
-    monkeypatch.delenv("NOTION_DATABASE_ID", raising=False)
-
     try:
-        notion_tools.NotionTools()
-        assert False, "Expected ValueError for missing token"
+        notion_tools.NotionMaster()
+        assert False, "Expected ValueError"
     except ValueError:
         pass
 
 
-def test_build_sample_properties_uses_schema():
-    out = notion_tools.NotionTools.build_sample_properties("title", "desc", "2024-01-01T00:00:00+00:00")
-    assert "URL" in out
-    assert "Title" in out
-    assert "Published" in out
+def test_notion_master_build_simple_property():
+    prop = notion_tools.NotionMaster.build_simple_property("Hello")
+    assert "title" in prop
+    assert prop["title"][0]["text"]["content"] == "Hello"
 
 
-def test_create_get_update_delete(monkeypatch):
-    calls = {"query_post": 0, "patch": 0}
-
+def test_notion_master_core_calls(monkeypatch):
     class Resp:
-        def __init__(self, payload):
+        def __init__(self, payload, status_code=200):
             self._payload = payload
-            self.status_code = 200
+            self.status_code = status_code
+            self.text = "ok"
 
         def json(self):
             return self._payload
 
-        def raise_for_status(self):
-            return None
-
-    def fake_post(url, headers=None, json=None, timeout=None):
-        if "query" in url:
-            calls["query_post"] += 1
-        if "query" in url and calls["query_post"] == 1:
-            return Resp({"results": [{"id": "1"}], "has_more": True, "next_cursor": "abc"})
-        if "query" in url and calls["query_post"] == 2:
-            return Resp({"results": [{"id": "2"}], "has_more": False, "next_cursor": None})
-        return Resp({"id": "new-page"})
+    def fake_post(url, json=None, headers=None, timeout=None):
+        if url.endswith("/query"):
+            return Resp({"results": [{"id": "1"}], "has_more": False, "next_cursor": None})
+        if url.endswith("/search"):
+            return Resp({"results": [{"id": "s1"}]})
+        if url.endswith("/comments"):
+            return Resp({"id": "c1"})
+        return Resp({"id": "new"})
 
     def fake_patch(url, json=None, headers=None, timeout=None):
-        calls["patch"] += 1
-        return Resp({"ok": True, "url": url})
+        return Resp({"ok": True, "url": url, "payload": json})
+
+    def fake_get(url, headers=None, timeout=None):
+        return Resp({"results": [{"id": "b1"}]})
 
     monkeypatch.setattr(notion_tools.requests, "post", fake_post)
     monkeypatch.setattr(notion_tools.requests, "patch", fake_patch)
+    monkeypatch.setattr(notion_tools.requests, "get", fake_get)
 
-    nt = notion_tools.NotionTools(notion_token="t", database_id="d")
+    nm = notion_tools.NotionMaster(token="t", database_id="d")
 
-    created = nt.create_page({"k": "v"})
-    assert created["id"] == "new-page"
+    assert len(nm.query_database()) == 1
+    assert nm.create_page({"Name": {"title": [{"text": {"content": "A"}}]}})["id"] == "new"
+    assert nm.update_page("p1", {"k": "v"})["ok"] is True
+    assert nm.delete_page("p1")["ok"] is True
+    assert len(nm.get_block_children("p1")) == 1
+    assert nm.append_content("p1", [{"object": "block"}])["ok"] is True
+    assert nm.add_comment("p1", "hello")["id"] == "c1"
+    assert len(nm.search("abc")) == 1
 
-    pages = nt.get_pages()
-    assert len(pages) == 2
 
-    updated = nt.update_page("pid", {"x": 1})
-    assert updated["ok"] is True
+def test_notion_tools_unified_api(monkeypatch):
+    class Resp:
+        def __init__(self, payload, status_code=200):
+            self._payload = payload
+            self.status_code = status_code
+            self.text = "ok"
 
-    deleted = nt.delete_page("pid")
-    assert deleted["ok"] is True
-    assert calls["patch"] == 2
+        def json(self):
+            return self._payload
+
+    monkeypatch.setattr(notion_tools.requests, "post", lambda *a, **k: Resp({"id": "new"}))
+    monkeypatch.setattr(notion_tools.requests, "patch", lambda *a, **k: Resp({"ok": True}))
+    monkeypatch.setattr(notion_tools.requests, "get", lambda *a, **k: Resp({"ok": True}))
+
+    nt = notion_tools.NotionTools(token="t", database_id="d")
+    assert nt.modify_object("pages", properties={"Name": {}})["id"] == "new"
+    assert nt.modify_object("pages", obj_id="p1", properties={"archived": True})["ok"] is True
+    assert nt.manage_data_structure("search", title="abc")["id"] == "new"
+    assert nt.interact("p1", text="hi")["id"] == "new"

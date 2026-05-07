@@ -1,0 +1,84 @@
+{
+  "collection": "finance_prompts",
+  "version": "1.0.0",
+  "updated_on": "2026-05-06",
+  "prompts": [
+    {
+      "id": "fin.portfolio_tracking.summary.v1",
+      "category": "portfolio_tracking",
+      "name": "Portfolio Tracking Summary",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 800,
+        "top_p": 0.9
+      },
+      "input_schema": {
+        "period": "string",
+        "positions_json": "string",
+        "transactions_json": "string",
+        "benchmark_data": "string"
+      },
+      "template": "Analyze portfolio performance for period={{period}}. Return JSON with keys: performance_snapshot, top_contributors, top_detractors, risk_signals, rebalance_ideas, next_actions. positions={{positions_json}} transactions={{transactions_json}} benchmark={{benchmark_data}}",
+      "output_schema": {
+        "performance_snapshot": "array[string]",
+        "top_contributors": "array[string]",
+        "top_detractors": "array[string]",
+        "risk_signals": "array[string]",
+        "rebalance_ideas": "array[string]",
+        "next_actions": "array[string]"
+      }
+    },
+    {
+      "id": "fin.financial_statement.review.v1",
+      "category": "financial_statements",
+      "name": "Financial Statement Review",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 1000,
+        "top_p": 0.9
+      },
+      "input_schema": {
+        "income_statement_json": "string",
+        "balance_sheet_json": "string",
+        "cash_flow_json": "string",
+        "notes_text": "string"
+      },
+      "template": "Review statements and return JSON with keys: trend_summary, margin_analysis, balance_sheet_health, cash_flow_quality, key_ratios, red_flags, diligence_questions. income={{income_statement_json}} balance={{balance_sheet_json}} cash={{cash_flow_json}} notes={{notes_text}}",
+      "output_schema": {
+        "trend_summary": "array[string]",
+        "margin_analysis": "array[string]",
+        "balance_sheet_health": "array[string]",
+        "cash_flow_quality": "array[string]",
+        "key_ratios": "array[string]",
+        "red_flags": "array[string]",
+        "diligence_questions": "array[string]"
+      }
+    },
+    {
+      "id": "fin.dataset.sft_qa.v1",
+      "category": "fine_tuning",
+      "name": "Financial QA SFT Dataset Generator",
+      "parameters": {
+        "temperature": 0.3,
+        "max_tokens": 1500,
+        "top_p": 0.95
+      },
+      "input_schema": {
+        "n": "integer",
+        "income_statement_json": "string",
+        "balance_sheet_json": "string",
+        "cash_flow_json": "string",
+        "notes_text": "string"
+      },
+      "template": "Generate {{n}} JSONL training rows using schema: instruction, input, output, tags, difficulty, source_span. Cover revenue, margin, liquidity, solvency, cash flow, and anomaly detection. income={{income_statement_json}} balance={{balance_sheet_json}} cash={{cash_flow_json}} notes={{notes_text}}",
+      "output_schema": {
+        "instruction": "string",
+        "input": "string",
+        "output": "string",
+        "tags": "array[string]",
+        "difficulty": "string",
+        "source_span": "string"
+      }
+    }
+  ]
+}

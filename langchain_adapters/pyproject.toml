@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "langchain-adapters-toolbox"
+version = "0.1.0"
+description = "Provider-aware LangChain toolbox with preferred llm_toolbox bridge support."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Karthick Jayaraman" }]
+dependencies = [
+  "chromadb",
+  "langchain",
+  "langchain-community>=0.2.0",
+  "langchain-core>=0.2.0"
+]
+
+[project.optional-dependencies]
+ollama = ["langchain-ollama>=0.2.0"]
+gemini = ["langchain-google-genai>=2.0.0"]
+openai = ["langchain-openai>=0.2.0"]
+deepseek = ["langchain-openai>=0.2.0"]
+integrations = ["my-toolbox>=1.1.0", "llm-toolbox>=0.1.0"]
+dev = ["pytest>=8.2", "ruff>=0.6.0"]
+
+[tool.setuptools.packages.find]
+include = ["langchain_adapters*"]
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "langchain-adapters-toolbox"
+version = "0.1.0"
+description = "Provider-aware LangChain toolbox with standalone and llm_toolbox-friendly workflows."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Karthick Jayaraman" }]
+dependencies = [
+  "chromadb",
+  "langchain",
+  "langchain-community",
+  "langchain-core"
+]
+
+[project.optional-dependencies]
+ollama = ["langchain-ollama>=0.2.0"]
+gemini = ["langchain-google-genai>=2.0.0"]
+openai = ["langchain-openai>=0.2.0"]
+deepseek = ["langchain-openai>=0.2.0"]
+integrations = ["my-toolbox>=1.1.0", "llm-toolbox>=0.1.0"]
+dev = ["pytest>=8.2", "ruff>=0.6.0"]
+
+[tool.setuptools.packages.find]
+include = ["langchain_adapters*"]

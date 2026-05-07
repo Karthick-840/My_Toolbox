@@ -66,6 +66,22 @@ include = ["my_toolbox*"]
 addopts = "-q"
 testpaths = ["tests"]
 
+[tool.coverage.run]
+source = ["my_toolbox", "finance_toolbox"]
+omit = [
+  "finance_toolbox/financial_reporter.py",
+  "finance_toolbox/main.py",
+  "finance_toolbox/y_test.py",
+  "finance_toolbox/yfinance_tools.py",
+  "finance_toolbox/financial_data_processor.py",
+  "my_toolbox/image_tools.py",
+  "my_toolbox/finance_tools.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+
 [tool.ruff]
 line-length = 100
 target-version = "py38"

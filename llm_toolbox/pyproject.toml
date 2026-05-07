@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-toolbox"
+version = "0.1.0"
+description = "Reusable LLM adapters, RAG helpers, and chat-serving utilities for My Toolbox."
+readme = "docs/README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "Karthick Jayaraman" }
+]
+dependencies = [
+  "langchain>=0.1.0",
+  "langchain-community>=0.1.0",
+  "langchain-core>=0.1.0",
+  "langchain-groq>=0.1.0",
+  "pydantic>=2.0.0",
+  "fastapi>=0.104.0",
+  "uvicorn>=0.24.0"
+]
+
+[project.optional-dependencies]
+embeddings = [
+  "google-generativeai>=0.3.0",
+  "sentence-transformers>=2.2.0",
+  "boto3>=1.26.0"
+]
+data-loading = [
+  "pypdf>=3.17.0",
+  "transformers>=4.30.0"
+]
+vector-stores = [
+  "chromadb>=0.4.0",
+  "qdrant-client>=2.7.0"
+]
+fine-tuning = [
+  "unsloth>=0.1.0",
+  "torch>=2.0.0",
+  "peft>=0.4.0",
+  "trl>=0.7.0",
+  "bitsandbytes>=0.41.0"
+]
+dev = [
+  "build>=1.2.1",
+  "pytest>=8.2",
+  "ruff>=0.6.0",
+  "twine>=5.1.1"
+]
+
+[tool.setuptools.packages.find]
+include = ["llm_toolbox*"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

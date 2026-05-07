@@ -1,0 +1,32 @@
+name: Ollama Toolbox CI
+
+on:
+  push:
+    paths:
+      - ".github/workflows/ollama-toolbox.yml"
+      - "ollama_toolbox/**"
+  pull_request:
+    paths:
+      - ".github/workflows/ollama-toolbox.yml"
+      - "ollama_toolbox/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Run package-local CI script
+        run: bash ollama_toolbox/deployment/ci.sh

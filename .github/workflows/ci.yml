@@ -48,4 +48,4 @@ jobs:
           ruff check tests
 
       - name: Run tests
-        run: pytest --cov=my_toolbox --cov-report=term-missing
+        run: make coverage-ci MIN_COVERAGE=55

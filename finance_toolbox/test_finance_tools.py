@@ -3,7 +3,7 @@ import types
 
 import pandas as pd
 
-import my_toolbox.finance_tools as finance_tools
+import finance_toolbox.finance_tools as finance_tools
 
 
 def test_init_requires_yfinance(monkeypatch):

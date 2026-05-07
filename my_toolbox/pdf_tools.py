@@ -58,6 +58,53 @@ class PDFAccess:
         pdf_canvas.save()
         return file_path
 
+
+    #TODO:The Upgrade: Add a method to detect if a PDF is a "Scan" vs a "Digital" PDF. If page.get_text() is empty but page.get_images() is not, move it to an /ocr_queue folder.
+    def needs_ocr(self, file_name):
+        """Returns True if the PDF has images but no selectable text."""
+        _require_fitz()
+        doc = fitz.open(os.path.join(self.input_path, file_name))
+        for page in doc:
+            if not page.get_text().strip() and len(page.get_images()) > 0:
+                return True
+        return False
+
+    #TODO: Feature,Class,Benefit
+    # MD5 Hashing,PDFAccess,Prevents merging the same document multiple times.
+    # Password Vault,PDF_Security,Automates the unlocking of recurring monthly statements.
+    # OCR Redirect,PDF_Extract,Identifies documents that need a scanner tool before text extraction.
+    # Metadata Stripper,PDF_Manipulate,Removes author/creator info before sharing files externally.
+
+    def move_duplicates_by_hash(directory, duplicates_subdir="duplicates"):
+
+        def file_md5(filepath, chunk_size=8192):
+            hash_md5 = hashlib.md5()
+            with open(filepath, "rb") as f:
+                for chunk in iter(lambda: f.read(chunk_size), b""):
+                    hash_md5.update(chunk)
+            return hash_md5.hexdigest()
+
+        hashes = {}
+        duplicates_dir = os.path.join(directory, duplicates_subdir)
+        os.makedirs(duplicates_dir, exist_ok=True)
+
+        for root, _, files in os.walk(directory):
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                file_hash = file_md5(filepath)
+                if file_hash in hashes:
+                    dest_path = os.path.join(duplicates_dir, filename)
+                    # Ensure unique filename in duplicates folder
+                    base, ext = os.path.splitext(filename)
+                    count = 1
+                    while os.path.exists(dest_path):
+                        dest_path = os.path.join(duplicates_dir, f"{base}_dup{count}{ext}")
+                        count += 1
+                    shutil.move(filepath, dest_path)
+                    print(f"Moved duplicate: {filepath} -> {dest_path}")
+                else:
+                    hashes[file_hash] = filepath
+
 class PDF_Extract(PDFAccess):
     def __init__(self, input_path="/inputs", output_path="/outputs"):
         super().__init__(input_path, output_path)
@@ -215,3 +262,22 @@ class PDF_Manipulate(PDFAccess):
             with open(output_path, 'wb') as output_file:
                 writer.write(output_file)
             print(f"Created {output_filename}.pdf")
+
+class PDF_Security(PDFAccess):
+    def check_encryption(self, file_name):
+        reader = self.read_pdf(file_name)
+        return reader.is_encrypted
+
+    def unlock_with_vault(self, file_name, password_list):
+        """Attempts to unlock a PDF using a list of known passwords."""
+        file_path = os.path.join(self.input_path, file_name)
+        for pwd in password_list:
+            try:
+                reader = PdfReader(file_path)
+                if reader.decrypt(pwd):
+                    # Logic to save the unlocked version and delete the locked one
+                    self.logger.info(f"Successfully unlocked {file_name}")
+                    return True
+            except Exception as e:
+                continue
+        return False

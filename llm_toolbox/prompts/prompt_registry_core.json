@@ -1,0 +1,142 @@
+{
+    "version": "1.0.0",
+    "updated_on": "2026-05-06",
+    "default_system_prompt_file": "system_prompt_variants.json",
+    "related_catalogs": [
+        "summarization_prompts.json",
+        "fine_tuning_prompts.json",
+        "finance_prompt_suite.json"
+    ],
+    "prompt_collections": [
+        {
+            "id": "summary.executive.v1",
+            "category": "summarization",
+            "description": "Executive summary for long-form documents with risks and actions.",
+            "provider": "agnostic",
+            "parameters": {
+                "temperature": 0.2,
+                "max_tokens": 900,
+                "top_p": 0.9
+            },
+            "input_schema": {
+                "document_title": "string",
+                "document_text": "string",
+                "audience": "string",
+                "max_words": "integer"
+            },
+            "prompt_template": "You are an expert analyst. Summarize the document for {{audience}}. Keep under {{max_words}} words. Return: 1) Executive Summary (3-5 bullets), 2) Key Risks, 3) Recommended Actions, 4) Open Questions. Title: {{document_title}}. Document: {{document_text}}",
+            "output_schema": {
+                "executive_summary": "array[string]",
+                "key_risks": "array[string]",
+                "recommended_actions": "array[string]",
+                "open_questions": "array[string]"
+            },
+            "quality_checks": [
+                "Do not introduce facts not in source text",
+                "Use concise, verifiable statements",
+                "Surface uncertainties explicitly"
+            ]
+        },
+        {
+            "id": "summary.technical.rag-ready.v1",
+            "category": "summarization",
+            "description": "Chunk-level summary intended for retrieval pipelines.",
+            "provider": "agnostic",
+            "parameters": {
+                "temperature": 0.1,
+                "max_tokens": 500,
+                "top_p": 0.9
+            },
+            "input_schema": {
+                "chunk_text": "string",
+                "source_id": "string"
+            },
+            "prompt_template": "Summarize the chunk into retrieval-ready notes. Return strict JSON with keys: source_id, summary_5_lines, entities, metrics, decisions, constraints, follow_up. source_id={{source_id}}; chunk={{chunk_text}}",
+            "output_schema": {
+                "source_id": "string",
+                "summary_5_lines": "array[string]",
+                "entities": "array[string]",
+                "metrics": "array[string]",
+                "decisions": "array[string]",
+                "constraints": "array[string]",
+                "follow_up": "array[string]"
+            }
+        },
+        {
+            "id": "fine_tune.synthetic_instruct_dataset.v1",
+            "category": "fine_tuning",
+            "description": "Generate instruction/response training rows from source content.",
+            "provider": "agnostic",
+            "parameters": {
+                "temperature": 0.4,
+                "max_tokens": 1200,
+                "top_p": 0.95
+            },
+            "input_schema": {
+                "source_text": "string",
+                "domain": "string",
+                "num_examples": "integer",
+                "style": "string"
+            },
+            "prompt_template": "Generate {{num_examples}} high-quality instruction tuning examples for domain={{domain}} and style={{style}} from source text. Output JSONL-style objects with keys: instruction, input, output, tags, difficulty. Ensure factual grounding in source text only. Source: {{source_text}}",
+            "output_schema": {
+                "instruction": "string",
+                "input": "string",
+                "output": "string",
+                "tags": "array[string]",
+                "difficulty": "string"
+            },
+            "quality_checks": [
+                "Reject hallucinated outputs",
+                "Include a mix of short and long responses",
+                "Balance easy/medium/hard difficulty"
+            ]
+        },
+        {
+            "id": "fine_tune.preference_pairs.v1",
+            "category": "fine_tuning",
+            "description": "Create chosen/rejected pairs for preference optimization.",
+            "provider": "agnostic",
+            "parameters": {
+                "temperature": 0.5,
+                "max_tokens": 1100,
+                "top_p": 0.95
+            },
+            "input_schema": {
+                "task_description": "string",
+                "context": "string",
+                "num_pairs": "integer"
+            },
+            "prompt_template": "Create {{num_pairs}} preference pairs for the task. For each pair output JSON with: prompt, chosen, rejected, rationale. chosen must be clearer, safer, and more faithful than rejected. task={{task_description}} context={{context}}",
+            "output_schema": {
+                "prompt": "string",
+                "chosen": "string",
+                "rejected": "string",
+                "rationale": "string"
+            }
+        },
+        {
+            "id": "governance.model_docs_audit.v1",
+            "category": "model_governance",
+            "description": "Audit model documentation completeness and risk posture.",
+            "provider": "agnostic",
+            "parameters": {
+                "temperature": 0.1,
+                "max_tokens": 700,
+                "top_p": 0.9
+            },
+            "input_schema": {
+                "model_document_text": "string",
+                "governance_standard": "string"
+            },
+            "prompt_template": "Audit model document against governance_standard={{governance_standard}}. Return JSON: score_0_to_100, missing_sections, risk_findings, evidence_gaps, remediation_plan. Document={{model_document_text}}",
+            "output_schema": {
+                "score_0_to_100": "integer",
+                "missing_sections": "array[string]",
+                "risk_findings": "array[string]",
+                "evidence_gaps": "array[string]",
+                "remediation_plan": "array[string]"
+            }
+        }
+    ]
+}

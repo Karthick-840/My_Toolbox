@@ -1,0 +1,67 @@
+{
+  "collection": "fine_tuning",
+  "version": "1.0.0",
+  "prompts": [
+    {
+      "id": "ft.sft_instructions.v1",
+      "name": "SFT Instruction Generator",
+      "use_case": "Generate instruction-following pairs from domain text",
+      "parameters": {
+        "temperature": 0.4,
+        "max_tokens": 1400
+      },
+      "template": "Generate {{n}} supervised fine-tuning examples from the source text. Return JSONL objects with keys: instruction, input, output, tags, difficulty. Ground every output in source facts only. Domain={{domain}} Source={{source_text}}",
+      "output_contract": [
+        "jsonl_format",
+        "n_examples_exact",
+        "difficulty_in_[easy,medium,hard]"
+      ]
+    },
+    {
+      "id": "ft.preference_pairs.v1",
+      "name": "Preference Pair Generator",
+      "use_case": "DPO/RLHF style chosen-rejected datasets",
+      "parameters": {
+        "temperature": 0.5,
+        "max_tokens": 1200
+      },
+      "template": "Create {{n}} preference pairs in JSONL. Each row: prompt, chosen, rejected, rationale. chosen must be more accurate, safer, and more useful than rejected. Task={{task}} Context={{context}}",
+      "output_contract": [
+        "jsonl_format",
+        "n_pairs_exact",
+        "chosen_better_than_rejected"
+      ]
+    },
+    {
+      "id": "ft.data_cleaning_rules.v1",
+      "name": "Dataset Cleaning Prompt",
+      "use_case": "Normalize and validate existing training records",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 900
+      },
+      "template": "Clean and normalize the dataset rows. Remove duplicates, redact personal data, fix malformed fields, and standardize tags. Return valid JSONL using schema: instruction, input, output, tags, difficulty, flags. Dataset={{dataset_rows}}",
+      "output_contract": [
+        "valid_jsonl_only",
+        "personally_identifiable_data_redacted",
+        "schema_consistent"
+      ]
+    },
+    {
+      "id": "ft.model_doc_review_pairs.v1",
+      "name": "Model Documentation Preference Pairs",
+      "use_case": "Train evaluators for model-card and governance quality",
+      "parameters": {
+        "temperature": 0.4,
+        "max_tokens": 1300
+      },
+      "template": "Create {{n}} JSONL preference pairs from model docs. Schema: prompt, chosen, rejected, rationale, policy_tags. chosen must be more complete on intended use, limitations, data provenance, metrics, bias, privacy, and monitoring. Document={{model_document_text}}",
+      "output_contract": [
+        "jsonl_format",
+        "n_pairs_exact",
+        "policy_tags_present",
+        "chosen_demonstrably_better"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "collection": "summarization",
+  "version": "1.0.0",
+  "prompts": [
+    {
+      "id": "sum.brief.v1",
+      "name": "Brief Summary",
+      "use_case": "Fast overview for operators and reviewers",
+      "parameters": {
+        "temperature": 0.2,
+        "max_tokens": 350
+      },
+      "template": "Summarize the following content in 5 bullets. Keep each bullet under 18 words. Include at least one risk or caveat. Content: {{content}}",
+      "output_contract": [
+        "exactly_5_bullets",
+        "contains_risk_or_caveat",
+        "no_hallucinations"
+      ]
+    },
+    {
+      "id": "sum.executive.v1",
+      "name": "Executive Summary",
+      "use_case": "Leadership and stakeholder updates",
+      "parameters": {
+        "temperature": 0.2,
+        "max_tokens": 900
+      },
+      "template": "Produce an executive summary using this structure: Context, Findings, Risks, Actions, Open Questions. Keep it under {{max_words}} words. Audience: {{audience}}. Content: {{content}}",
+      "output_contract": [
+        "five_named_sections",
+        "under_max_words",
+        "facts_traceable_to_source"
+      ]
+    },
+    {
+      "id": "sum.rag_chunk.v1",
+      "name": "RAG Chunk Summary",
+      "use_case": "Store chunk-level metadata for retrieval",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 450
+      },
+      "template": "Return strict JSON with keys: source_id, summary, entities, numbers, decisions, constraints, unanswered_questions. source_id={{source_id}} chunk={{chunk}}",
+      "output_contract": [
+        "valid_json_only",
+        "all_required_keys_present",
+        "summary_under_80_words"
+      ]
+    },
+    {
+      "id": "sum.model_docs_check.v1",
+      "name": "Model Documentation Checker",
+      "use_case": "Review model cards and technical docs for completeness",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 750
+      },
+      "template": "Audit model documentation against governance checklist. Return JSON with keys: score_0_to_100, missing_sections, risk_findings, evidence_gaps, remediation_plan. Required checklist: intended_use, limitations, training_data, evaluation_metrics, bias_safety, privacy, deployment_monitoring. Document={{model_document_text}}",
+      "output_contract": [
+        "valid_json_only",
+        "score_present",
+        "missing_sections_listed",
+        "remediation_plan_actionable"
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-.PHONY: build test install clean upload check
+.PHONY: build test install clean upload check coverage coverage-ci
 
 # Define your Python interpreter
 PYTHON = python3
@@ -6,6 +6,7 @@ PACKAGE_NAME = my_toolbox
 SRC_DIR = my_toolbox
 TEST_DIR = tests
 LINTER = pylint
+MIN_COVERAGE ?= 55
 # Detect OS and define Python and pip commands based on OS
 
 OS := $(shell uname)
@@ -41,6 +42,21 @@ lint:
 test:
 	@echo "Running tests with nox..."
 	nox
+
+
+coverage:
+	@echo "Running tests with coverage for both toolboxes..."
+	pytest --cov=my_toolbox --cov=finance_toolbox --cov-report=term-missing
+
+
+coverage-ci:
+	@echo "Running coverage gate (minimum $(MIN_COVERAGE)%)..."
+	pytest \
+		--cov=my_toolbox \
+		--cov=finance_toolbox \
+		--cov-report=term-missing \
+		--cov-report=xml \
+		--cov-fail-under=$(MIN_COVERAGE)
 
 	
 # Build the package using `python -m build`

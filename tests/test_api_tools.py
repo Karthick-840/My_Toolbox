@@ -1,4 +1,5 @@
 import my_toolbox.api_tools as api_tools
+import requests
 
 
 class _Resp:
@@ -25,7 +26,7 @@ def test_rapid_api_calls_success_with_headers_params(monkeypatch, dummy_logger):
         return _Resp(200, {"data": {"ok": True}})
 
     monkeypatch.setattr(api_tools.time, "sleep", lambda *_: None)
-    monkeypatch.setattr(api_tools.requests, "get", fake_get)
+    monkeypatch.setattr(requests, "get", fake_get)
 
     out = tool.rapid_api_calls(
         {"url": "https://example.com", "headers": {"k": "v"}},
@@ -40,7 +41,7 @@ def test_rapid_api_calls_success_without_headers(monkeypatch, dummy_logger):
 
     monkeypatch.setattr(api_tools.time, "sleep", lambda *_: None)
     monkeypatch.setattr(
-        api_tools.requests,
+        requests,
         "get",
         lambda *args, **kwargs: _Resp(200, {"hello": "world"}),
     )

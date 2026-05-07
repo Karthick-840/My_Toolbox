@@ -646,3 +646,133 @@ class GoogleDatastore:
                 entity.pop(p, None)
         self.client.put(entity)
         return entity
+
+
+import os
+from Google_Cloud_Functions import GoogleDatastore, GoogleBigQueryHelper
+
+
+"""
+import os
+from pprint import pprint
+from google.cloud import storage
+from Google_Cloud_Functions import GoogleCloudStorage
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'/workspaces/portfolio_update/token.json'
+
+
+
+"""
+# Key Features
+# CRUD Operations
+
+# list_entities: Fetch entities with optional filters and pagination.
+# get_entity: Retrieve a specific entity by ID.
+# save_entity: Create or update an entity.
+# delete_entity: Delete an entity by ID.
+# Batch Processing
+
+# batch_write: Use Apache Beam for large-scale imports from a CSV file in Cloud Storage.
+# Utility Functions
+
+# list_kinds: List all kinds in the project (requires access to Datastore metadata).
+
+"""
+# gcs = GoogleCloudStorage(token,project="portfolio-updater-407410")
+
+# # Create a bucket
+# #gcs.create_bucket('my-test-bucket')
+# buckets = gcs.list_buckets()
+# print(buckets)
+# # Get bucket details
+# #details = gcs.get_bucket_details('my-test-bucket')
+# #print(details)
+#         """
+
+# datastore_helper = GoogleDatastore(project_id=project_id, credentials_path=token)
+# # Create a new database
+# datastore_helper.create_database(db_name='Testing Functionality', metadata={'description': 'Stores monthly varaibles like inflation figure, gold price etc'})
+
+# datastore_helper.add_property(
+#     db_name='Monthly Variables',
+#     property_name='lastUpdatedBy',
+#     property_value='AdminUser'
+# )
+
+# # datastore_helper.remove_property(
+# #     db_name='Monthly Variables',
+# #     property_name='lastUpdatedBy'
+# # )
+
+
+# # # Save an entity
+# # datastore_helper.save_entity(kind='Question', data={'quiz': 'GCP', 'question': 'What is Datastore?'})
+
+# # # List entities
+# # entities, next_cursor = datastore_helper.list_entities(kind='Question', filters=[('quiz', '=', 'GCP')])
+# # print(entities)
+
+# # # Get an entity
+# # entity = datastore_helper.get_entity(kind='Question', entity_id=123456)
+# # print(entity)
+
+# # # Delete an entity
+# # datastore_helper.delete_entity(kind='Question', entity_id=123456)
+
+# # # Perform a batch write
+# # datastore_helper.batch_write(
+# #     project='your-gcp-project-id',
+# #     kind='Book',
+# #     csv_file='books.csv',
+# #     bucket='your-gcs-bucket'
+# # )
+
+# # # List all kinds
+# # print(datastore_helper.list_kinds())
+
+
+# project_id = "your-project-id"  # Replace with your project ID
+# credentials_json =  r'/workspaces/portfolio_update/token.json'  # Optional if you set the GOOGLE_APPLICATION_CREDENTIALS env variable
+
+# bq_helper = GoogleBigQueryHelper(project_id, credentials_json)
+
+
+# # # Define table schema
+# # schema = [
+# #     bigquery.SchemaField("name", "STRING", mode="REQUIRED"),
+# #     bigquery.SchemaField("age", "INTEGER", mode="REQUIRED"),
+# #     bigquery.SchemaField("email", "STRING")
+# # ]
+
+# # Path to your CSV file
+# # Create dataset
+# dataset_name = "investment_transactions"
+# #bq_helper.create_dataset(dataset_name)
+
+# csv_file_path = "/workspaces/portfolio_update/docs/Outputs/nps_purchase_history.csv"
+# table_name = "nps_purchase_history"
+
+# # Create table from CSV schema
+# bq_helper.create_table_from_csv(dataset_name, table_name, csv_file_path)
+
+#bq_helper.create_table(dataset_name, table_name, schema)
+
+
+
+
+# # Create table
+
+# # Insert rows into the table
+# rows_to_insert = [
+#     {"name": "John Doe", "age": 30, "email": "johndoe@example.com"},
+#     {"name": "Jane Smith", "age": 25, "email": "janesmith@example.com"}
+# ]
+# bq_helper.insert_rows(dataset_name, table_name, rows_to_insert)
+
+# # Query data
+# query = f"SELECT * FROM `{project_id}.{dataset_name}.{table_name}` WHERE age > 20"
+# query_results = bq_helper.query_data(query)
+
+# # Read table data
+# rows = bq_helper.read_table(dataset_name, table_name)
+# print(json.dumps(rows, indent=4))
