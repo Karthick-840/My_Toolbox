@@ -2,7 +2,7 @@
 
 Each `## vX.Y.Z (date)` section becomes the GitHub Release notes for that tag.
 
-## v1.3.0 (2026-11-26)
+## v1.3.0 (2026-12-26)
 
 - Add `data.quality` (profile, schema compare, quality issues, contracts, Parquet), `data.sql_tools.SQLClient`, `cloud.warehouse.BigQueryWarehouse`.
 - Add `core.pipeline` (retry with backoff, `PipelineRun`, `Checkpoint`) and `core.sql_guard`.

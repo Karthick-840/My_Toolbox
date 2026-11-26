@@ -115,6 +115,7 @@ Roadmap (not implemented): interactive PDF editing, LLM-based PDF chat, auto-tag
 
 - [docs/SKILL.md](docs/SKILL.md) - usage guide for people and agents: library, MCP server (tools, resources, prompts), client config, Ansible install.
 - [docs/GitHub_Actions_Gatekeeper.md](docs/GitHub_Actions_Gatekeeper.md) - CI workflows and branch protection.
+- [docs/use_cases.md](docs/use_cases.md) - what the toolbox can do and project ideas built from it.
 - [docs/HISTORY.md](docs/HISTORY.md) - changelog; each section becomes the GitHub Release notes.
 
 ## License
