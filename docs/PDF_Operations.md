@@ -1,39 +1,27 @@
-PDF Operations
-===========
+# PDF Operations
 
-PDF documents are ubiquitous in professional settings. Tasks such as combining research papers, dissecting lengthy reports, or extracting specific page ranges are common but often time-consuming. This tool aims to simplify these operations and provide a foundation for more advanced PDF interactions.
+`my_toolbox.documents.pdf_tools` provides:
 
-## Overview
+1. **PDFAccess** - list and read PDFs, write text to a PDF.
+2. **PDF_Extract** - extract text (whole or page-wise, optional regex), images and tables.
+3. **PDF_Manipulate** - merge, split into pages, `extract_pages` (ranges like `3-7,10,12-`), `remove_blank_pages`, combine by `0001_` prefix order, sort & rename, move or delete empty PDFs.
+4. **PDF_FromImages** - build a PDF from images (paths, bytes, `BytesIO`, PIL) or a folder of images.
 
-This module provides functionalities to access, extract, and manipulate PDF files. It includes the following components:
+All results are written to `output_path`; methods return the produced paths or results.
 
-1. **PDF_Access**: List and read PDF files in a directory.
-2. **PDF_Extract**: Extract text, tables, and images from PDF files.
-3. **PDF_Manipulate**: Merge, split, and move PDF files.
+## Local app
 
-<h3>Core Functionalities</h3>
+The same operations are available in a browser UI (`app/templates/pdf_operations.html`), including
+a Snap to PDF tab for pasting screenshots:
 
-* **Splitting PDFs & Merging PDFs** Merge multiple PDFs into a single document, either in alphabetical order or a prescribed order. Also, Split a PDF into individual pages or specific page ranges.
-* **Removing Blank Pages:** Streamline PDFs by eliminating unnecessary blank pages.
-* **Custom Page Extraction:** Extract specific pages or page ranges from a PDF to create new documents.
+```bash
+make app
+```
 
-.. image:: pdf_manipulation.png
-:align: center
+See the README for workspace folders and requirements.
 
- **_NOTE:_**  While these features establish a solid base, the long-term vision for PDF manipulation extends beyond simple document restructuring. The integration of advanced language models like Llama 3 or xAI's Grok is envisioned to enable users to interact with PDFs in a conversational manner, extracting information, modifying content, or generating summaries through natural language prompts.
+## Roadmap (not implemented yet)
 
- <h3>Future Enhancements</h3>
-
-* **Interactive PDF Editing** 
-* **Intelligent Document Organization:** Automatically categorize and tag PDFs based on content, metadata, and usage patterns.
-
-.. image:: future_features.png
-:align: center
-
-
-<h2>Project Status, Contributions and Feedback:</h2>
-
-This project is currently in its early stages, with a focus on core PDF manipulation functionalities. The codebase is hosted on Heroku for initial development and testing. As the project matures, alternative deployment platforms will be considered to ensure optimal performance and scalability.
-
-This project is open to contributions from the developer community. Whether it's improving existing features, adding new functionalities, or enhancing the user interface, your input is invaluable. Please feel free to fork the repository, experiment, and share your ideas.
-
+- Interactive PDF editing
+- Natural-language interaction with PDFs via an LLM
+- Automatic categorising and tagging of PDFs

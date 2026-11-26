@@ -1,4 +1,4 @@
-from my_toolbox.log_tools import Logger
+from my_toolbox.core.log_tools import Logger
 
 
 def test_logger_creates_file_and_sets_level(tmp_path):

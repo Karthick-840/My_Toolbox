@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PDF Operations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#fafafa; --card:#fff; --ink:#1c1c1e; --muted:#8a8a8e; --line:#d8d8dc; --accent:#2b59ff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161618; --card:#222225; --ink:#f2f2f4; --muted:#8e8e93; --line:#3a3a3f; --accent:#6c8cff; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.4 system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:20px 24px 0; }
+  h1 { font-size:20px; font-weight:600; margin:0 0 4px; }
+  h2 { font-size:14px; margin:0 0 10px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+  .hint { color:var(--muted); margin:0 0 12px; font-size:13px; }
+  .layout { display:grid; grid-template-columns:320px 1fr; gap:20px; padding:20px 24px 60px; max-width:1300px; margin:0 auto; }
+  @media (max-width:800px) { .layout { grid-template-columns:1fr; } }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px; }
+  .file { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:14px; }
+  .file:last-child { border-bottom:none; }
+  .file span.name { flex:1; word-break:break-all; }
+  .file .order { font-size:11px; font-weight:600; background:var(--accent); color:#fff; border-radius:9px; min-width:18px; text-align:center; }
+  .file a, .file button.link { color:var(--accent); background:none; border:none; cursor:pointer; font:inherit; font-size:12px; text-decoration:none; padding:0; }
+  .file button.del { color:#d33; }
+  .empty { color:var(--muted); font-size:13px; }
+  .drop { border:2px dashed var(--line); border-radius:8px; padding:14px; text-align:center; color:var(--muted); cursor:pointer; margin-bottom:12px; }
+  .drop.over { border-color:var(--accent); color:var(--accent); }
+  nav { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+  nav button { padding:7px 12px; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:16px; cursor:pointer; font:inherit; font-size:13px; }
+  nav button.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .op { display:none; } .op.active { display:block; }
+  label { display:block; font-size:13px; color:var(--muted); margin:10px 0 4px; }
+  input[type=text], input[type=number], textarea { width:100%; padding:9px 11px; font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:8px; }
+  textarea { min-height:90px; resize:vertical; }
+  .row { display:flex; gap:10px; } .row > * { flex:1; }
+  .check { display:flex; align-items:center; gap:8px; margin:10px 0; font-size:14px; color:var(--ink); }
+  button.primary { margin-top:14px; padding:10px 20px; font:inherit; font-weight:600; color:#fff; background:var(--accent); border:none; border-radius:8px; cursor:pointer; }
+  button.primary:disabled { opacity:.45; cursor:not-allowed; }
+  #status { min-height:20px; color:var(--muted); margin-bottom:8px; word-break:break-word; }
+  #status.ok { color:#1e9e50; } #status.err { color:#d33; }
+  pre { white-space:pre-wrap; word-break:break-word; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:12px; max-height:420px; overflow:auto; font-size:13px; margin:8px 0 0; }
+  table { border-collapse:collapse; font-size:13px; margin:8px 0; } th, td { border:1px solid var(--line); padding:4px 8px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin:10px 0; }
+  .card { position:relative; background:var(--bg); border:1px solid var(--line); border-radius:8px; aspect-ratio:3/4; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .card img { max-width:100%; max-height:100%; object-fit:contain; }
+  .card .num { position:absolute; top:4px; left:4px; background:var(--ink); color:var(--bg); font-size:11px; font-weight:600; border-radius:9px; min-width:18px; text-align:center; }
+  .card .x { position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:10px; border:none; cursor:pointer; background:rgba(0,0,0,.55); color:#fff; }
+  .slot { border:2px dashed var(--line); background:transparent; color:var(--muted); font-size:12px; text-align:center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>PDF Operations</h1>
+  <p class="hint">Runs locally on your machine. Upload PDFs, pick an operation, download the results.</p>
+  <details class="hint" id="about">
+    <summary>About this tool</summary>
+    <p>PDF documents are ubiquitous in professional settings. Tasks such as combining research papers, dissecting lengthy
+    reports, or extracting specific page ranges are common but often time-consuming. This app simplifies these operations
+    and runs entirely on your machine (it wraps <code>my_toolbox.documents.pdf_tools</code>).</p>
+
+    <b>Components</b>
+    <ul>
+      <li><b>PDFAccess</b> &ndash; list and read PDFs, write text to a new PDF, build a PDF from images (Snap to PDF).</li>
+      <li><b>PDF_Extract</b> &ndash; extract text (whole document, page-wise, optional regex), images and tables.</li>
+      <li><b>PDF_Manipulate</b> &ndash; merge, split, extract page ranges, remove blank pages, combine by prefix order, sort &amp; rename, move or delete empty PDFs.</li>
+    </ul>
+
+    <b>Core functionality</b>
+    <ul>
+      <li><b>Merging &amp; splitting</b> &ndash; merge several PDFs into one (in tick order), or split a PDF into single pages.</li>
+      <li><b>Removing blank pages</b> &ndash; streamline PDFs by eliminating pages with no text or images.</li>
+      <li><b>Custom page extraction</b> &ndash; pull specific pages or ranges (e.g. <code>3-7, 10</code>) into a new document.</li>
+    </ul>
+
+    <b>Roadmap</b> (not available yet)
+    <ul>
+      <li>Interactive PDF editing.</li>
+      <li>Intelligent document organization: automatically categorize and tag PDFs by content, metadata and usage.</li>
+      <li>Conversational PDF interaction with a language model: extract information, modify content or generate summaries from natural-language prompts.</li>
+    </ul>
+
+    <b>Project status &amp; contributions</b>
+    <p>The project is in its early stages, focused on core PDF manipulation. Contributions are welcome: improve features,
+    add functionality or enhance this interface by forking the repository on GitHub.</p>
+  </details>
+</header>
+<div class="layout">
+  <aside>
+    <div class="panel">
+      <h2>Inputs</h2>
+      <div class="drop" id="drop">Drop PDFs here or click to upload</div>
+      <input type="file" id="picker" multiple accept=".pdf,application/pdf" hidden>
+      <div id="inputs"></div>
+      <p class="hint" style="margin-top:8px">Tick files to use them in an operation. Merge uses the tick order.</p>
+    </div>
+    <div class="panel"><h2>Outputs</h2><div id="outputs"></div></div>
+  </aside>
+
+  <main>
+    <nav id="tabs"></nav>
+    <div id="status"></div>
+
+    <section class="panel op" data-op="text" data-title="Extract text">
+      <h2>Extract text</h2>
+      <div class="row">
+        <div><label>Page (optional)</label><input type="number" id="text-page" min="1"></div>
+        <div><label>Regex filter (optional)</label><input type="text" id="text-pattern" placeholder="\d{4}-\d{2}-\d{2}"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="text-pagewise"> Page-by-page</label>
+      <button class="primary" data-run="text" data-needs-files>Extract</button>
+    </section>
+
+    <section class="panel op" data-op="images" data-title="Extract images">
+      <h2>Extract images</h2>
+      <p class="hint">Embedded images are saved to Outputs.</p>
+      <button class="primary" data-run="images" data-needs-files>Extract images</button>
+    </section>
+
+    <section class="panel op" data-op="tables" data-title="Extract tables">
+      <h2>Extract tables</h2>
+      <p class="hint">Uses tabula-py (requires Java).</p>
+      <button class="primary" data-run="tables" data-needs-files>Extract tables</button>
+    </section>
+
+    <section class="panel op" data-op="merge" data-title="Merge">
+      <h2>Merge PDFs</h2>
+      <label>Output name</label><input type="text" id="merge-name" placeholder="merged.pdf">
+      <button class="primary" data-run="merge" data-needs-files>Merge selected</button>
+    </section>
+
+    <section class="panel op" data-op="split" data-title="Split">
+      <h2>Split into single pages</h2>
+      <button class="primary" data-run="split" data-needs-files>Split selected</button>
+    </section>
+
+    <section class="panel op" data-op="extract_pages" data-title="Extract pages">
+      <h2>Extract page range</h2>
+      <p class="hint">Creates a new PDF from the chosen pages of each selected file. Use ranges like <code>3-7, 10, 12-</code> (1-based).</p>
+      <label>Pages</label><input type="text" id="pages-ranges" placeholder="3-7, 10">
+      <button class="primary" data-run="extract_pages" data-needs-files>Extract pages</button>
+    </section>
+
+    <section class="panel op" data-op="remove_blank" data-title="Remove blank pages">
+      <h2>Remove blank pages</h2>
+      <p class="hint">Writes a copy of each selected PDF without its blank pages. A page is blank if it has no text (and no images, unless ticked below).</p>
+      <label class="check"><input type="checkbox" id="blank-text-only"> Ignore images (treat pages with only images as blank)</label>
+      <button class="primary" data-run="remove_blank" data-needs-files>Remove blank pages</button>
+    </section>
+
+    <section class="panel op" data-op="combine" data-title="Combine by order">
+      <h2>Combine by prefix order</h2>
+      <p class="hint">Combines inputs named <code>0001_</code>, <code>0002_</code>, ... in the order you list. Use "Rename" first to add prefixes.</p>
+      <div class="row">
+        <div><label>Order</label><input type="text" id="combine-order" placeholder="1, 3, 2"></div>
+        <div><label>Output name</label><input type="text" id="combine-name" placeholder="combined.pdf"></div>
+      </div>
+      <button class="primary" data-run="combine">Combine</button>
+    </section>
+
+    <section class="panel op" data-op="rename" data-title="Sort &amp; rename">
+      <h2>Sort &amp; rename inputs</h2>
+      <p class="hint">Adds <code>0001_</code>-style prefixes to every file in Inputs (alphabetical order). This renames files.</p>
+      <button class="primary" data-run="rename" data-confirm="Rename every file in Inputs?">Rename inputs</button>
+    </section>
+
+    <section class="panel op" data-op="empty" data-title="Empty PDFs">
+      <h2>Find empty PDFs</h2>
+      <p class="hint">Checks every input PDF for text. Empty ones are moved to outputs/empty (or deleted).</p>
+      <label class="check"><input type="checkbox" id="empty-delete"> Delete instead of move</label>
+      <button class="primary" data-run="empty">Scan inputs</button>
+    </section>
+
+    <section class="panel op" data-op="write_text" data-title="Text to PDF">
+      <h2>Write text to PDF</h2>
+      <label>Output name</label><input type="text" id="write-name" placeholder="note.pdf">
+      <label>Text</label><textarea id="write-content"></textarea>
+      <div class="row">
+        <div><label>X</label><input type="number" id="write-x" value="100"></div>
+        <div><label>Y</label><input type="number" id="write-y" value="750"></div>
+      </div>
+      <button class="primary" data-run="write_text">Create PDF</button>
+    </section>
+
+    <section class="panel op active" data-op="images_to_pdf" data-title="Snap to PDF">
+      <h2>Snap to PDF</h2>
+      <p class="hint">Copy an image or screenshot, then press <b>Ctrl+V</b> (or <b>Cmd+V</b>). Each paste is added to the end.</p>
+      <div class="grid" id="grid"></div>
+      <label>Output name</label><input type="text" id="snap-name" placeholder="report.pdf">
+      <button class="primary" id="snap-create" disabled>Create PDF</button>
+    </section>
+
+    <div id="result"></div>
+  </main>
+</div>
+<script>
+  const $ = (s) => document.querySelector(s);
+  const state = { selected: [], images: [] };
+  const statusEl = $('#status'), resultEl = $('#result');
+
+  function setStatus(msg, cls) { statusEl.textContent = msg || ''; statusEl.className = cls || ''; }
+  function el(tag, props, ...kids) {
+    const n = Object.assign(document.createElement(tag), props || {});
+    n.append(...kids); return n;
+  }
+
+  // ---- tabs ----
+  const ops = [...document.querySelectorAll('.op')];
+  const tabs = $('#tabs');
+  ops.forEach(sec => tabs.append(el('button', {
+    innerHTML: sec.dataset.title, onclick: () => show(sec.dataset.op), id: 'tab-' + sec.dataset.op })));
+  function show(op) {
+    ops.forEach(s => s.classList.toggle('active', s.dataset.op === op));
+    tabs.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.id === 'tab-' + op));
+    resultEl.innerHTML = ''; setStatus('');
+  }
+  show('images_to_pdf');
+
+  // ---- files ----
+  async function refresh() {
+    const data = await (await fetch('/api/files')).json();
+    state.selected = state.selected.filter(f => data.inputs.includes(f));
+    renderInputs(data.inputs); renderOutputs(data.outputs);
+  }
+  function renderInputs(files) {
+    const box = $('#inputs'); box.innerHTML = '';
+    if (!files.length) box.append(el('div', { className: 'empty', textContent: 'No files yet.' }));
+    files.forEach(f => {
+      const idx = state.selected.indexOf(f);
+      const cb = el('input', { type: 'checkbox', checked: idx >= 0 });
+      cb.onchange = () => {
+        state.selected = cb.checked ? [...state.selected, f] : state.selected.filter(x => x !== f);
+        renderInputs(files);
+      };
+      const row = el('div', { className: 'file' }, cb, el('span', { className: 'name', textContent: f }));
+      if (idx >= 0) row.append(el('span', { className: 'order', textContent: idx + 1 }));
+      row.append(el('a', { href: '/files/inputs/' + encodeURIComponent(f), textContent: 'get' }), delBtn('inputs', f));
+      box.append(row);
+    });
+  }
+  function renderOutputs(files) {
+    const box = $('#outputs'); box.innerHTML = '';
+    if (!files.length) box.append(el('div', { className: 'empty', textContent: 'Nothing yet.' }));
+    files.forEach(f => box.append(el('div', { className: 'file' },
+      el('span', { className: 'name', textContent: f }),
+      el('a', { href: '/files/outputs/' + encodeURIComponent(f), textContent: 'download' }), delBtn('outputs', f))));
+  }
+  function delBtn(kind, f) {
+    return el('button', { className: 'link del', textContent: 'delete', onclick: async () => {
+      await fetch('/files/' + kind + '/' + encodeURIComponent(f), { method: 'DELETE' }); refresh(); } });
+  }
+  async function upload(fileList) {
+    const fd = new FormData();
+    [...fileList].forEach(f => fd.append('files', f));
+    setStatus('Uploading\u2026');
+    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (res.ok) { state.selected.push(...data.saved); setStatus('Uploaded ' + data.saved.length + ' file(s)', 'ok'); }
+    else setStatus('Error: ' + data.error, 'err');
+    refresh();
+  }
+  const drop = $('#drop'), picker = $('#picker');
+  drop.onclick = () => picker.click();
+  picker.onchange = () => { upload(picker.files); picker.value = ''; };
+  drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('over'); upload(e.dataTransfer.files); };
+
+  // ---- operations ----
+  const bodies = {
+    text: () => ({ pattern: $('#text-pattern').value, page: $('#text-page').value, pagewise: $('#text-pagewise').checked }),
+    merge: () => ({ name: $('#merge-name').value }),
+    extract_pages: () => ({ ranges: $('#pages-ranges').value }),
+    remove_blank: () => ({ text_only: $('#blank-text-only').checked }),
+    combine: () => ({ order: $('#combine-order').value, name: $('#combine-name').value }),
+    empty: () => ({ delete: $('#empty-delete').checked }),
+    write_text: () => ({ name: $('#write-name').value, content: $('#write-content').value, x: $('#write-x').value, y: $('#write-y').value }),
+  };
+  document.querySelectorAll('[data-run]').forEach(btn => btn.onclick = async () => {
+    const op = btn.dataset.run;
+    if (btn.dataset.confirm && !confirm(btn.dataset.confirm)) return;
+    if ('needsFiles' in btn.dataset && !state.selected.length) return setStatus('Tick at least one input file first.', 'err');
+    if (op === 'empty' && $('#empty-delete').checked && !confirm('Permanently delete empty PDFs?')) return;
+    const body = Object.assign({ files: state.selected }, (bodies[op] || (() => ({})))());
+    await run(op, body);
+  });
+
+  async function run(op, body) {
+    setStatus('Working\u2026'); resultEl.innerHTML = '';
+    try {
+      const res = await fetch('/api/op/' + op, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      setStatus(data.message || 'Done', 'ok');
+      showResult(data);
+      refresh();
+      return data;
+    } catch (err) { setStatus('Error: ' + err.message, 'err'); }
+  }
+  function showResult(data) {
+    if (data.text) for (const [f, t] of Object.entries(data.text)) {
+      resultEl.append(el('h2', { textContent: f }), el('pre', { textContent: typeof t === 'string' ? t : JSON.stringify(t, null, 2) }));
+    }
+    if (data.tables) for (const [f, list] of Object.entries(data.tables)) {
+      resultEl.append(el('h2', { textContent: f + ' (' + list.length + ' tables)' }));
+      list.forEach(h => resultEl.append(el('div', { innerHTML: h })));
+    }
+    if (data.new_outputs && data.new_outputs.length) {
+      const p = el('div', { className: 'panel' }, el('h2', { textContent: 'New outputs' }));
+      data.new_outputs.forEach(f => p.append(el('div', { className: 'file' },
+        el('a', { href: '/files/outputs/' + encodeURIComponent(f), textContent: f }))));
+      resultEl.append(p);
+    }
+  }
+
+  // ---- snap to pdf ----
+  const grid = $('#grid'), snapBtn = $('#snap-create');
+  function renderSnap() {
+    grid.innerHTML = '';
+    state.images.forEach((src, i) => grid.append(el('div', { className: 'card' },
+      el('img', { src }), el('span', { className: 'num', textContent: i + 1 }),
+      el('button', { className: 'x', textContent: '\u00d7', title: 'Remove', onclick: () => { state.images.splice(i, 1); renderSnap(); } }))));
+    grid.append(el('div', { className: 'card slot', textContent: 'Ctrl+V \u2192 #' + (state.images.length + 1) }));
+    snapBtn.disabled = state.images.length === 0;
+  }
+  document.addEventListener('paste', (e) => {
+    const items = [...((e.clipboardData || {}).items || [])].filter(it => it.type.startsWith('image/'));
+    if (!items.length) return;
+    e.preventDefault();
+    show('images_to_pdf');
+    Promise.all(items.map(it => new Promise(res => {
+      const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(it.getAsFile());
+    }))).then(list => { state.images.push(...list); renderSnap(); });
+  });
+  snapBtn.onclick = async () => {
+    snapBtn.disabled = true;
+    const data = await run('images_to_pdf', { images: state.images, name: $('#snap-name').value });
+    if (data) { state.images = []; $('#snap-name').value = ''; }
+    renderSnap();
+  };
+
+  renderSnap(); refresh();
+</script>
+</body>
+</html>

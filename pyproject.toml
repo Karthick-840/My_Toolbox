@@ -7,7 +7,7 @@ name = "my-toolbox"
 version = "1.1.0"
 description = "A useful set of tools for API calls, PDF operations, string/date utilities, streamlit visualizations, log tools, and project helpers."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10,<3.14"
 license = "MIT"
 authors = [
   { name = "Karthick Jayaraman" }
@@ -18,7 +18,17 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 dependencies = [
-  "PyMuPDF==1.24.10",
+  "pandas==2.2.3",
+  "Requests==2.33.0",
+  "urllib3>=2.6.3,<3"
+]
+
+[project.urls]
+Homepage = "https://github.com/Karthick-840/My_Toolbox"
+Repository = "https://github.com/Karthick-840/My_Toolbox"
+
+[project.optional-dependencies]
+cloud = [
   "gspread==6.1.4",
   "gspread_dataframe==4.0.0",
   "google-api-python-client==2.149.0",
@@ -28,36 +38,53 @@ dependencies = [
   "google-cloud-bigquery==3.41.0",
   "google-cloud-datastore==2.24.0",
   "google-cloud-storage==3.10.1",
+  "protobuf==5.29.6"
+]
+data = [
   "kaggle==1.6.17",
-  "pandas==2.2.3",
-  "pdfminer==20191125",
+  "psycopg2-binary==2.9.10",
+  "SQLAlchemy==2.0.36",
+  "openpyxl>=3.1",
+  "matplotlib>=3.8",
+  "wordcloud>=1.9"
+]
+documents = [
+  "PyMuPDF>=1.25,<2",
   "pdfminer.six==20251230",
   "Pillow==12.2.0",
-  "protobuf==5.29.6",
-  "psycopg2==2.9.10",
   "PyPDF2==3.0.1",
   "reportlab==4.2.2",
-  "Requests==2.33.0",
-  "urllib3>=2.6.3,<3",
-  "SQLAlchemy==2.0.36",
-  "streamlit==1.54.0",
-  "streamlit-option-menu==0.4.0",
   "tabula_py==2.9.3"
 ]
-
-[project.urls]
-Homepage = "https://github.com/Karthick-840/My_Toolbox"
-Repository = "https://github.com/Karthick-840/My_Toolbox"
-
-[project.optional-dependencies]
-dev = [
-  "pytest>=8.2",
-  "pytest-cov>=5.0",
-  "ruff>=0.6.0",
-  "build>=1.2.1",
-  "twine>=5.1.1",
-  "pip-audit>=2.7.3"
+web = [
+  "streamlit==1.54.0",
+  "streamlit-option-menu==0.4.0",
+  "icalendar>=5",
+  "pytz"
 ]
+images = [
+  "Pillow==12.2.0",
+  "opencv-python>=4.9",
+  "rembg>=2.0"
+]
+all = ["my-toolbox[cloud,data,documents,web,images]"]
+
+[dependency-groups]
+test = ["pytest>=8.2", "pytest-cov>=5.0"]
+lint = ["ruff>=0.6.0"]
+audit = ["pip-audit>=2.7.3"]
+release = ["build>=1.2.1", "twine>=5.1.1"]
+app = ["flask>=3.0"]
+dev = [
+  {include-group = "test"},
+  {include-group = "lint"},
+  {include-group = "audit"},
+  {include-group = "release"},
+  {include-group = "app"},
+]
+
+[tool.uv]
+default-groups = ["dev"]
 
 [tool.setuptools.packages.find]
 include = ["my_toolbox*"]
@@ -65,11 +92,16 @@ include = ["my_toolbox*"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"my_toolbox/documents/image_tools.py" = ["E402", "E701"]
+"my_toolbox/web/streamlit_tools.py" = ["E402"]

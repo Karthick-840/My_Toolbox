@@ -1,4 +1,4 @@
-.PHONY: build test install clean upload check
+.PHONY: build test install clean upload check app ruff lint export-prod
 
 # Define your Python interpreter
 PYTHON = python3
@@ -23,7 +23,7 @@ else
 endif
 
 # Define the source files or directories to lint
-SRC = my_toolbox/*.py tests/*.py  # Adjust according to your project's structure
+SRC = my_toolbox/*/*.py tests/*.py  # Adjust according to your project's structure
 
 # Lint target
 lint:
@@ -37,42 +37,38 @@ lint:
 		elif [ $$? -eq 2 ]; then echo "Linting warning: Pylint score is between 2.5 and 8"; exit 0; \
 		else echo "Linting success: Pylint score is 8 or higher"; fi; }
 
-# Run tests using `nox`
+# Run tests (dev group + all extras, locked by uv.lock)
 test:
-	@echo "Running tests with nox..."
-	nox
+	uv run --all-extras pytest
 
-	
-# Build the package using `python -m build`
+# Run ruff
+ruff:
+	uv run ruff check my_toolbox app tests
+
+# Run the local PDF Operations app
+app:
+	uv run --extra documents --group app python -m app.pdf_app
+
+# Build the package (sdist + wheel)
 build:
-	@echo "Checking for requirements.txt..."
-	@if [ ! -f requirements.txt ]; then echo "Error: requirements.txt not found."; exit 1; fi
-	@echo "Building the package with build module..."
-	$(PIP) install --upgrade build
-	$(PYTHON) -m build
+	uv build
 
-
-# Install the package locally
-# Install the package locally with requirements check
+# Install the package + all extras into the local uv environment
 install:
-	@echo "Checking for requirements.txt..."
-	@if [ ! -f requirements.txt ]; then echo "Error: requirements.txt not found."; exit 1; fi
-	@echo "Installing the package locally..."
-	$(PIP) install -r requirements.txt
-	$(PIP) install -e .
-
+	uv sync --all-extras
 
 # Upload the package using `twine`
 upload: build
-	@echo "Uploading the package with twine..."
-	$(PYTHON) -m twine upload dist/*
+	uv run --group release twine upload dist/*
 
 # Check the package before uploading using `twine check`
 check:
-	@echo "Checking the package with twine..."
-	$(PYTHON) -m twine check dist/*
+	uv run --group release twine check dist/*
+
+# Export pinned production requirements (for deployment targets that need requirements.txt)
+export-prod:
+	uv export --no-dev --extra all --no-emit-project --no-hashes
 
 # Clean up build artifacts
 clean:
-	@echo "Cleaning up build artifacts..."
 	rm -rf dist/ build/ *.egg-info

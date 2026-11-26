@@ -1,6 +1,6 @@
 import pandas as pd
 
-from my_toolbox.time_ops import DateFunctions
+from my_toolbox.core.time_ops import DateFunctions
 
 
 def test_update_and_convert_dates(dummy_logger):

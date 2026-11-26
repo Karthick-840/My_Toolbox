@@ -1,6 +1,6 @@
 import os
 
-from my_toolbox.pdf_tools import PDF_Extract, PDF_Manipulate, PDFAccess
+from my_toolbox.documents.pdf_tools import PDF_Extract, PDF_Manipulate, PDFAccess
 
 
 def _make_pdf(path, text):
@@ -68,13 +68,65 @@ def test_pdf_manipulate_merge_split_sort(tmp_path):
     os.chdir(tmp_path)
     try:
         man.merge_pdfs(merge_dict=["a.pdf", "b.pdf"], output_file_name="merged")
-        assert (tmp_path / "merged.pdf").exists()
+        assert (out_dir / "merged.pdf").exists()
 
         man.split_pdf_pages("a.pdf")
-        assert (tmp_path / "a_page_1.pdf").exists()
+        assert (out_dir / "a_page_1.pdf").exists()
 
         man.sort_and_rename_files(rename=True)
         renamed = list(in_dir.glob("*.pdf"))
         assert any(f.name.startswith("0001_") for f in renamed)
     finally:
         os.chdir(cwd)
+
+
+def test_pdf_from_images_and_folder(tmp_path):
+    from PIL import Image
+
+    from my_toolbox.documents.pdf_tools import PDF_FromImages
+
+    img_dir = tmp_path / "imgs"
+    img_dir.mkdir()
+    for n in ("img10", "img2"):
+        Image.new("RGBA", (20, 20), (255, 0, 0, 0)).save(img_dir / f"{n}.png")
+
+    tool = PDF_FromImages(input_path=str(tmp_path / "in"), output_path=str(tmp_path / "out"))
+    out = tool.folder_to_pdf(str(img_dir), "combined")
+    assert out.endswith("combined.pdf")
+    from PyPDF2 import PdfReader
+
+    assert len(PdfReader(out).pages) == 2
+
+
+def _three_page_pdf(path, blank_middle=True):
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+
+    c = canvas.Canvas(str(path), pagesize=letter)
+    c.drawString(100, 750, "page one")
+    c.showPage()
+    if not blank_middle:
+        c.drawString(100, 750, "page two")
+    c.showPage()
+    c.drawString(100, 750, "page three")
+    c.save()
+
+
+def test_extract_pages_and_remove_blank(tmp_path):
+    import pytest
+    from PyPDF2 import PdfReader
+
+    in_dir, out_dir = tmp_path / "in", tmp_path / "out"
+    in_dir.mkdir()
+    _three_page_pdf(in_dir / "doc.pdf")
+    man = PDF_Manipulate(input_path=str(in_dir), output_path=str(out_dir))
+
+    out = man.extract_pages("doc.pdf", "3, 1-2")
+    texts = [p.extract_text().strip() for p in PdfReader(out).pages]
+    assert texts[0] == "page three" and len(texts) == 3
+    with pytest.raises(ValueError):
+        man.extract_pages("doc.pdf", "2-9")
+
+    cleaned, removed = man.remove_blank_pages("doc.pdf")
+    assert removed == [2]
+    assert len(PdfReader(cleaned).pages) == 2

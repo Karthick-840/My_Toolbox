@@ -1,6 +1,6 @@
 import pandas as pd
 
-import my_toolbox.postgress_tools as pg
+import my_toolbox.data.postgress_tools as pg
 
 
 class FakeCursor:

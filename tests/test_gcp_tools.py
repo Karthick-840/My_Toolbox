@@ -1,5 +1,5 @@
 
-import my_toolbox.gcp_tools as gcp_tools
+import my_toolbox.cloud.gcp_tools as gcp_tools
 
 
 def test_require_google_sheet_deps_raises(monkeypatch):

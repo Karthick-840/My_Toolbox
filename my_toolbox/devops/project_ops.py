@@ -3,9 +3,9 @@ import os
 
 import pandas as pd
 
-from my_toolbox.git_tools import GitTools
-from my_toolbox.kaggle_tools import KaggleTools
-from my_toolbox.log_tools import Logger
+from my_toolbox.core.log_tools import Logger
+from my_toolbox.data.kaggle_tools import KaggleTools
+from my_toolbox.devops.git_tools import GitTools
 
 if __name__ == "__main__":
     

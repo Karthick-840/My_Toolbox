@@ -11,43 +11,22 @@ A Python utility package with helper modules for:
 
 ## Installation
 
-Install from source:
+Using uv (recommended):
 
 ```bash
-pip install .
+uv add "my-toolbox @ git+https://github.com/Karthick-840/My_Toolbox.git"            # core only
+uv add "my-toolbox[documents,web] @ git+https://github.com/Karthick-840/My_Toolbox.git"  # with extras
+uv add --editable /absolute/path/to/My_Toolbox                                     # co-developing
 ```
 
-Install in editable mode for development:
-
-```bash
-pip install -e .
-```
-
-Install from GitHub:
+Using pip:
 
 ```bash
 pip install "git+https://github.com/Karthick-840/My_Toolbox.git@main"
+pip install "my_toolbox[all] @ git+https://github.com/Karthick-840/My_Toolbox.git@main"
 ```
 
-Install from local wheel (best for stable reuse):
-
-```bash
-pip install dist/my_toolbox-1.1.0-py3-none-any.whl
-```
-
-## uv Installation
-
-If your target project uses uv:
-
-```bash
-uv add /absolute/path/to/My_Toolbox
-```
-
-Editable mode while co-developing both repositories:
-
-```bash
-uv add --editable /absolute/path/to/My_Toolbox
-```
+Python 3.10-3.13 is supported.
 
 ## Quick Start
 
@@ -66,36 +45,54 @@ print(hello("World"))
 ## Build Distributions
 
 ```bash
-python -m build
+uv build        # or: make build
 ```
 
-Artifacts are generated in the `dist/` directory.
-
-This repository now uses [pyproject.toml](pyproject.toml) as the package source of truth.
-
-For full packaging and release steps, see [docs/Package_Preparation.md](docs/Package_Preparation.md).
+Artifacts are generated in the `dist/` directory. [pyproject.toml](pyproject.toml) is the single source of truth for the package; `uv.lock` pins the exact versions used for development, tests and CI.
 
 For branch gatekeeping and required CI checks, see [docs/GitHub_Actions_Gatekeeper.md](docs/GitHub_Actions_Gatekeeper.md).
 
 ## Module Notes
 
-- `my_toolbox.pdf_tools`: PDF read/write, merge, split, extraction helpers.
-- `my_toolbox.streamlit_tools`: Multi-app and menu helpers for Streamlit.
-- `my_toolbox.gcp_tools`: Google Sheets and Cloud Storage helpers.
+- `my_toolbox.core`: `my_decorators`, `log_tools`, `string_ops`, `time_ops`, `validation`, `error_handling`, `operator_tools` (base install).
+- `my_toolbox.cloud`: `gcp_tools` (Sheets, Storage, BigQuery) - `pip install "my-toolbox[cloud]"`.
+- `my_toolbox.data`: `postgress_tools`, `kaggle_tools`, `directory_tools`, `excel_tools`, `mongo_tools`, `visualization_tools` - `[data]`.
+- `my_toolbox.documents`: `pdf_tools` (PDF read/merge/split/extract, `PDF_FromImages` for images -> PDF, `PDF_Security`) - `[documents]`; `image_tools` (viewer, background removal) - `[images]`.
+- `my_toolbox.web`: `api_tools`, `notion_tools`, `streamlit_tools`, `calendar_tools`, `email_tools`, `medium_tools` (notebook -> Medium draft, see [docs/Jupyter_to_Medium.md](docs/Jupyter_to_Medium.md)) - `[web]`.
+- `my_toolbox.devops`: `git_tools`, `project_ops`.
+
+Install everything with the `[all]` extra.
+
+### Related toolboxes (separate packages, not part of `my_toolbox`)
+
+Finance, LLM, LangChain and agentic/MCP work live in their own repos next to this one: `Finance_Toolbox`, `LLM_Toolbox_v2`, `LangChain_Toolbox`, `Agentic_Toolbox`. They depend on `my-toolbox`, never the other way round.
+ Example: `from my_toolbox.core.time_ops import DateFunctions`.
 
 Some modules require external services or credentials (for example, GCP credentials and Streamlit runtime).
+
+## Dependencies: production vs development
+
+- **Production** (what consumers get): `[project.dependencies]` (core) and `[project.optional-dependencies]` (`cloud`, `data`, `documents`, `web`, `all`).
+- **Development** (never shipped): `[dependency-groups]` in `pyproject.toml` - `test`, `lint`, `audit`, `release`, `app`, and `dev` (all of them, synced by default).
+- There is no `requirements.txt`. If a deployment target needs one: `make export-prod`.
 
 ## Development
 
 ```bash
-pip install -r requirements.txt
+uv sync --all-extras      # create .venv with every extra + the dev group (make install)
+make test                 # uv run --all-extras pytest
+make ruff                 # lint
 ```
 
-Run a basic import smoke test:
+## PDF Operations app
+
+A local browser app (not part of the installed package) lives in [`app/`](app/). It exposes everything in `my_toolbox.documents.pdf_tools` - extract text/images/tables, merge, split, combine, rename, remove empty PDFs, text to PDF, and Snap to PDF (paste screenshots with Ctrl+V).
 
 ```bash
-python -c "import my_toolbox"
+make app     # uv run --extra documents --group app python -m app.pdf_app
 ```
+
+Opens http://127.0.0.1:5050. Files are stored in `./workspace/inputs` and `./workspace/outputs` (override with `PDF_APP_WORKSPACE`). Table extraction needs Java (tabula-py).
 
 ## License
 

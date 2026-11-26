@@ -1,5 +1,5 @@
 
-from my_toolbox.git_tools import GitTools
+from my_toolbox.devops.git_tools import GitTools
 
 
 def test_create_local_repo_runs_git(monkeypatch, tmp_path, dummy_logger):
@@ -9,7 +9,7 @@ def test_create_local_repo_runs_git(monkeypatch, tmp_path, dummy_logger):
     def fake_run(cmd):
         calls.append(cmd)
 
-    monkeypatch.setattr("my_toolbox.git_tools.subprocess.run", fake_run)
+    monkeypatch.setattr("my_toolbox.devops.git_tools.subprocess.run", fake_run)
     g.create_local_repo("repo1", folder_path=str(tmp_path), remote_url="https://x")
 
     repo_path = tmp_path / "repo1"
@@ -26,7 +26,7 @@ def test_create_requirements_invokes_pipreqs(monkeypatch, tmp_path, dummy_logger
     def fake_check_call(cmd):
         calls.append(cmd)
 
-    monkeypatch.setattr("my_toolbox.git_tools.subprocess.check_call", fake_check_call)
+    monkeypatch.setattr("my_toolbox.devops.git_tools.subprocess.check_call", fake_check_call)
     g.create_requirements(str(tmp_path))
     assert calls
     assert "--force" in calls[0]

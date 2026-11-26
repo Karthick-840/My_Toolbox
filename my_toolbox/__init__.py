@@ -1,22 +1,44 @@
-"""My_Toolbox - Collection of utility tools and decorators."""
+"""My_Toolbox - Collection of utility tools and decorators.
 
-from .my_decorators import before_after, log_calls, requires, run_if
+Subpackages (import explicitly so optional dependencies stay optional):
+    core       decorators, logging, validation, errors, string/date helpers
+    cloud      Google Sheets / Cloud Storage / BigQuery   (pip install my-toolbox[cloud])
+    data       Postgres, Kaggle, Excel, Mongo, directory, visualization (pip install my-toolbox[data])
+    documents  PDF tools (+ image tools: my-toolbox[images])   (pip install my-toolbox[documents])
+    web        API, Notion, Streamlit, calendar, email, Medium           (pip install my-toolbox[web])
+    devops     git helpers and project ops
+"""
+
+from .core.my_decorators import (
+    before_after,
+    catch_exception,
+    deprecated,
+    log_calls,
+    memoize,
+    not_none,
+    requires,
+    run_if,
+    singleton,
+    throttle,
+    timing,
+    timing_with_threshold,
+    type_check,
+    validate_args,
+)
 
 __all__ = [
-	"before_after",
-	"log_calls",
-	"requires",
-	"run_if",
-	"api_tools",
-	"directory_tools",
-	"finance_tools",
-	"gcp_tools",
-	"git_tools",
-	"kaggle_tools",
-	"log_tools",
-	"pdf_tools",
-	"postgress_tools",
-	"streamlit_tools",
-	"string_ops",
-	"time_ops",
+    "before_after",
+    "catch_exception",
+    "deprecated",
+    "log_calls",
+    "memoize",
+    "not_none",
+    "requires",
+    "run_if",
+    "singleton",
+    "throttle",
+    "timing",
+    "timing_with_threshold",
+    "type_check",
+    "validate_args",
 ]
