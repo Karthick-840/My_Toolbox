@@ -1,4 +1,4 @@
-PyMuPDF==1.24.10
+PyMuPDF>=1.25,<2
 gspread==6.1.4
 gspread_dataframe==4.0.0
 google-api-python-client==2.149.0
