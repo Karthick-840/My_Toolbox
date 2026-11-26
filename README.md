@@ -60,7 +60,7 @@ For branch gatekeeping and required CI checks, see [docs/GitHub_Actions_Gatekeep
 - `my_toolbox.documents`: `pdf_tools` (PDF read/merge/split/extract, `PDF_FromImages` for images -> PDF, `PDF_Security`) - `[documents]`; `image_tools` (viewer, background removal) - `[images]`.
 - `my_toolbox.web`: `api_tools`, `notion_tools`, `streamlit_tools`, `calendar_tools`, `email_tools`, `medium_tools` (notebook -> Medium draft; needs `MEDIUM_TOKEN`) - `[web]`.
 - `my_toolbox.devops`: `git_tools`, `project_ops`.
-- `my_toolbox.mcp`: MCP server for PDF operations and notebook -> Medium - `[mcp]`.
+- `my_toolbox.mcp`: MCP server (tools, resources, prompts) for PDF operations and notebook -> Medium - `[mcp]`.
 
 Install everything with the `[all]` extra.
 
@@ -102,13 +102,13 @@ pip install "my-toolbox[mcp] @ git+https://github.com/Karthick-840/My_Toolbox.gi
 my-toolbox-mcp --workspace /data/work     # stdio; files in <workspace>/inputs and /outputs
 ```
 
-Usage guides for agents and humans live in [`skills/`](skills/): `use-my-toolbox` (library) and `use-my-toolbox-mcp` (server, client config, Ansible install). Roadmap (not implemented): interactive PDF editing, LLM-based PDF chat, auto-tagging.
+One usage guide for agents and humans lives in [`skills/my-toolbox`](skills/my-toolbox/SKILL.md): library usage, MCP server (tools, resources, prompts), client config and Ansible install. Roadmap (not implemented): interactive PDF editing, LLM-based PDF chat, auto-tagging.
 
 ## Releasing
 
-1. In a PR, bump `VERSION` in `my_toolbox/version.py` and add a `## vX.Y.Z (date)` section to `HISTORY.md`.
+1. In a PR, bump `VERSION` in `my_toolbox/version.py` and add a `## vX.Y.Z (date)` section to `docs/HISTORY.md`.
 2. After merge: `git checkout main && git pull && git tag vX.Y.Z && git push origin vX.Y.Z`.
-3. The `Release` workflow checks the tag matches `version.py`, tests, builds, and creates the GitHub Release (notes from `HISTORY.md`, wheel and sdist attached). Set repo variable `PUBLISH_TO_PYPI=true` (plus a PyPI trusted publisher) to also publish to PyPI.
+3. The `Release` workflow checks the tag matches `version.py`, tests, builds, and creates the GitHub Release (notes from `docs/HISTORY.md`, wheel and sdist attached). Set repo variable `PUBLISH_TO_PYPI=true` (plus a PyPI trusted publisher) to also publish to PyPI.
 
 ## License
 
