@@ -150,6 +150,79 @@ def notebook_to_medium(notebook: str, title: str | None = None, tags: list[str] 
     return {"id": result.get("id"), "url": result.get("url"), "status": result.get("publishStatus")}
 
 
+@mcp.resource("toolbox://files/inputs", mime_type="application/json")
+def inputs_resource() -> list[str]:
+    """File names currently in the workspace inputs/ folder."""
+    return list_files()["inputs"]
+
+
+@mcp.resource("toolbox://files/outputs", mime_type="application/json")
+def outputs_resource() -> list[str]:
+    """File names currently in the workspace outputs/ folder."""
+    return list_files()["outputs"]
+
+
+@mcp.resource("toolbox://pdf/{file}/info", mime_type="application/json")
+def pdf_info(file: str) -> dict:
+    """Page count, encryption flag and whether the PDF looks scanned (needs OCR)."""
+    name = _existing(file)
+    access = PDFAccess(**_kw())
+    reader = access.read_pdf(name)
+    info = {"file": name, "pages": len(reader.pages), "encrypted": bool(reader.is_encrypted)}
+    try:
+        info["needs_ocr"] = access.needs_ocr(name)
+    except Exception:  # PyMuPDF missing or unreadable file
+        info["needs_ocr"] = None
+    return info
+
+
+@mcp.resource("toolbox://guide", mime_type="text/markdown")
+def guide() -> str:
+    """How the workspace and tools work."""
+    return (
+        "Files live in the workspace: put sources in `inputs/`, results appear in `outputs/`.\n"
+        "Pass bare file names (no paths). Page ranges look like `3-7,10,12-`.\n"
+        "Read `toolbox://files/inputs` to see available files and "
+        "`toolbox://pdf/{file}/info` to inspect a PDF before acting."
+    )
+
+
+@mcp.prompt()
+def summarize_pdf(file: str) -> str:
+    """Summarise a PDF from inputs/."""
+    return (
+        f"Read toolbox://pdf/{file}/info. If needs_ocr is true, say the file is a scan and stop. "
+        f"Otherwise call extract_text for '{file}' and write a concise summary with key points."
+    )
+
+
+@mcp.prompt()
+def extract_section(file: str, topic: str) -> str:
+    """Find the pages about a topic and save them as a new PDF."""
+    return (
+        f"Call extract_text for '{file}' page by page, find the pages about '{topic}', "
+        "then call extract_pages with those page ranges and report the output file."
+    )
+
+
+@mcp.prompt()
+def clean_scan(file: str) -> str:
+    """Remove blank pages from a scanned PDF."""
+    return (
+        f"Call remove_blank_pages for '{file}'. Report which pages were removed and the output "
+        "file. If nothing was removed, say so."
+    )
+
+
+@mcp.prompt()
+def publish_notebook(notebook: str, tags: str = "") -> str:
+    """Publish a notebook to Medium as a draft."""
+    return (
+        f"Call notebook_to_medium for '{notebook}' with tags [{tags}] and status 'draft'. "
+        "Return the draft URL. Never publish publicly unless the user asks."
+    )
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="my_toolbox MCP server")
     parser.add_argument("--workspace", help="Workspace folder (default: ./workspace)")

@@ -49,3 +49,18 @@ def test_tools_registered():
 
     names = {t.name for t in asyncio.run(server.mcp.list_tools())}
     assert {"merge_pdfs", "extract_pages", "notebook_to_medium"} <= names
+
+
+def test_resources_and_prompts(ws):
+    import asyncio
+
+    _pdf(ws / "inputs" / "a.pdf", "alpha")
+    prompts = {p.name for p in asyncio.run(server.mcp.list_prompts())}
+    assert {"summarize_pdf", "clean_scan", "publish_notebook", "extract_section"} <= prompts
+    uris = {str(r.uri) for r in asyncio.run(server.mcp.list_resources())}
+    assert {"toolbox://files/inputs", "toolbox://guide"} <= uris
+    templates = {t.uriTemplate for t in asyncio.run(server.mcp.list_resource_templates())}
+    assert "toolbox://pdf/{file}/info" in templates
+    info = server.pdf_info("a.pdf")
+    assert info["pages"] == 1 and info["encrypted"] is False
+    assert server.inputs_resource() == ["a.pdf"]

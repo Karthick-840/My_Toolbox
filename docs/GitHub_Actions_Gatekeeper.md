@@ -16,7 +16,7 @@ This guide ensures feature branches and main are protected by CI checks before m
   - Package Quality runs on PR and main push.
   - Security Audit runs on PR, main push, and weekly schedule.
 - Release publish:
-  - Publish Package runs on GitHub release published.
+  - Release runs when a `v*` tag is pushed (verifies version, tests, builds, creates the GitHub Release).
 
 ## 3. Enable branch protection in GitHub UI
 
