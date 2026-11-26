@@ -1,5 +1,10 @@
-from my_toolbox.error_handling import APIError, RateLimitError, RetryExhaustedError, ValidationError
-from my_toolbox.validation import Validator, validate_email, validate_json_schema, validate_url
+from my_toolbox.core.error_handling import (
+    APIError,
+    RateLimitError,
+    RetryExhaustedError,
+    ValidationError,
+)
+from my_toolbox.core.validation import Validator, validate_email, validate_json_schema, validate_url
 
 
 def test_validation_basics():

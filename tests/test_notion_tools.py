@@ -1,4 +1,4 @@
-import my_toolbox.notion_tools as notion_tools
+import my_toolbox.web.notion_tools as notion_tools
 
 
 def test_notion_master_requires_token(monkeypatch):

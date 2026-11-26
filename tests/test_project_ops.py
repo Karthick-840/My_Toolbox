@@ -37,8 +37,8 @@ def test_project_ops_main_executes(monkeypatch, tmp_path):
             return None
 
     monkeypatch.setattr("argparse.ArgumentParser", Parser)
-    monkeypatch.setattr("my_toolbox.Project_Ops.Logger", FakeLoggerClass)
-    monkeypatch.setattr("my_toolbox.Project_Ops.GitTools", FakeGitTools)
+    monkeypatch.setattr("my_toolbox.devops.project_ops.Logger", FakeLoggerClass)
+    monkeypatch.setattr("my_toolbox.devops.project_ops.GitTools", FakeGitTools)
 
-    runpy.run_module("my_toolbox.Project_Ops", run_name="__main__")
+    runpy.run_module("my_toolbox.devops.project_ops", run_name="__main__")
     assert (tmp_path / "demo").exists()
