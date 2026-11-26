@@ -19,7 +19,6 @@ classifiers = [
 ]
 dependencies = [
   "pydantic>=2",
-  "yfinance>=0.2",
   "PyMuPDF==1.24.10",
   "gspread==6.1.4",
   "gspread_dataframe==4.0.0",
@@ -69,16 +68,8 @@ addopts = "-q"
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["my_toolbox", "finance_toolbox"]
-omit = [
-  "finance_toolbox/financial_reporter.py",
-  "finance_toolbox/main.py",
-  "finance_toolbox/y_test.py",
-  "finance_toolbox/yfinance_tools.py",
-  "finance_toolbox/financial_data_processor.py",
-  "my_toolbox/image_tools.py",
-  "my_toolbox/finance_tools.py",
-]
+source = ["my_toolbox"]
+omit = ["my_toolbox/image_tools.py"]
 
 [tool.coverage.report]
 show_missing = true

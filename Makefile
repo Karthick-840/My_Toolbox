@@ -45,15 +45,14 @@ test:
 
 
 coverage:
-	@echo "Running tests with coverage for both toolboxes..."
-	pytest --cov=my_toolbox --cov=finance_toolbox --cov-report=term-missing
+	@echo "Running tests with coverage ..."
+	pytest --cov=my_toolbox --cov-report=term-missing
 
 
 coverage-ci:
 	@echo "Running coverage gate (minimum $(MIN_COVERAGE)%)..."
 	pytest \
 		--cov=my_toolbox \
-		--cov=finance_toolbox \
 		--cov-report=term-missing \
 		--cov-report=xml \
 		--cov-fail-under=$(MIN_COVERAGE)
