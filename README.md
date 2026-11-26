@@ -102,13 +102,19 @@ pip install "my-toolbox[mcp] @ git+https://github.com/Karthick-840/My_Toolbox.gi
 my-toolbox-mcp --workspace /data/work     # stdio; files in <workspace>/inputs and /outputs
 ```
 
-One usage guide for agents and humans lives in [`skills/my-toolbox`](skills/my-toolbox/SKILL.md): library usage, MCP server (tools, resources, prompts), client config and Ansible install. Roadmap (not implemented): interactive PDF editing, LLM-based PDF chat, auto-tagging.
+Roadmap (not implemented): interactive PDF editing, LLM-based PDF chat, auto-tagging.
 
 ## Releasing
 
 1. In a PR, bump `VERSION` in `my_toolbox/version.py` and add a `## vX.Y.Z (date)` section to `docs/HISTORY.md`.
 2. After merge: `git checkout main && git pull && git tag vX.Y.Z && git push origin vX.Y.Z`.
 3. The `Release` workflow checks the tag matches `version.py`, tests, builds, and creates the GitHub Release (notes from `docs/HISTORY.md`, wheel and sdist attached). Set repo variable `PUBLISH_TO_PYPI=true` (plus a PyPI trusted publisher) to also publish to PyPI.
+
+## Documentation
+
+- [docs/skills/my-toolbox/SKILL.md](docs/skills/my-toolbox/SKILL.md) - usage guide for people and agents: library, MCP server (tools, resources, prompts), client config, Ansible install.
+- [docs/GitHub_Actions_Gatekeeper.md](docs/GitHub_Actions_Gatekeeper.md) - CI workflows and branch protection.
+- [docs/HISTORY.md](docs/HISTORY.md) - changelog; each section becomes the GitHub Release notes.
 
 ## License
 
