@@ -54,13 +54,13 @@ For branch gatekeeping and required CI checks, see [docs/GitHub_Actions_Gatekeep
 
 ## Module Notes
 
-- `my_toolbox.core`: `my_decorators`, `log_tools`, `string_ops`, `time_ops`, `validation`, `error_handling`, `operator_tools` (base install).
-- `my_toolbox.cloud`: `gcp_tools` (Sheets, Storage, BigQuery) - `pip install "my-toolbox[cloud]"`.
-- `my_toolbox.data`: `postgress_tools`, `kaggle_tools`, `directory_tools`, `excel_tools`, `mongo_tools`, `visualization_tools` - `[data]`.
+- `my_toolbox.core`: `pipeline` (retry, run log, checkpoints), `sql_guard`, `my_decorators`, `log_tools`, `string_ops`, `time_ops`, `validation`, `error_handling`, `operator_tools` (base install).
+- `my_toolbox.cloud`: `gcp_tools` (Sheets, Storage, BigQuery), `warehouse` (`BigQueryWarehouse`) - `pip install "my-toolbox[cloud]"`.
+- `my_toolbox.data`: `postgress_tools`, `kaggle_tools`, `directory_tools`, `excel_tools`, `mongo_tools`, `visualization_tools` - `[data]`; `quality` (profiling, schema diff, contracts, Parquet) and `sql_tools` (`SQLClient`) - `[analytics]`.
 - `my_toolbox.documents`: `pdf_tools` (PDF read/merge/split/extract, `PDF_FromImages` for images -> PDF, `PDF_Security`) - `[documents]`; `image_tools` (viewer, background removal) - `[images]`.
 - `my_toolbox.web`: `api_tools`, `notion_tools`, `streamlit_tools`, `calendar_tools`, `email_tools`, `medium_tools` (notebook -> Medium draft; needs `MEDIUM_TOKEN`) - `[web]`.
-- `my_toolbox.devops`: `git_tools`, `project_ops`.
-- `my_toolbox.mcp`: MCP server (tools, resources, prompts) for PDF operations and notebook -> Medium - `[mcp]`.
+- `my_toolbox.devops`: `git_tools`, `project_ops`, `notebook_tools` (strip outputs, secret scan, headless run) - `[notebooks]`.
+- `my_toolbox.mcp`: MCP server (tools, resources, prompts) for PDFs, data files, SQL and notebooks - `[mcp]`.
 
 Install everything with the `[all]` extra.
 
@@ -99,7 +99,8 @@ Opens http://127.0.0.1:5050. Files are stored in `./workspace/inputs` and `./wor
 
 ```bash
 pip install "my-toolbox[mcp] @ git+https://github.com/Karthick-840/My_Toolbox.git@v1.2.0"
-my-toolbox-mcp --workspace /data/work     # stdio; files in <workspace>/inputs and /outputs
+my-toolbox-mcp --workspace /data/work                  # stdio, read-only by default
+my-toolbox-mcp --workspace /data/work --allow-write    # enable tools that write files
 ```
 
 Roadmap (not implemented): interactive PDF editing, LLM-based PDF chat, auto-tagging.
@@ -112,7 +113,7 @@ Roadmap (not implemented): interactive PDF editing, LLM-based PDF chat, auto-tag
 
 ## Documentation
 
-- [docs/skills/my-toolbox/SKILL.md](docs/skills/my-toolbox/SKILL.md) - usage guide for people and agents: library, MCP server (tools, resources, prompts), client config, Ansible install.
+- [docs/SKILL.md](docs/SKILL.md) - usage guide for people and agents: library, MCP server (tools, resources, prompts), client config, Ansible install.
 - [docs/GitHub_Actions_Gatekeeper.md](docs/GitHub_Actions_Gatekeeper.md) - CI workflows and branch protection.
 - [docs/HISTORY.md](docs/HISTORY.md) - changelog; each section becomes the GitHub Release notes.
 
