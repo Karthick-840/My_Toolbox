@@ -18,6 +18,7 @@ try:
     import yfinance as yf
     HAS_YFINANCE = True
 except ImportError:  # pragma: no cover
+    yf = None
     HAS_YFINANCE = False
 
 

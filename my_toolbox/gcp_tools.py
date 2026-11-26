@@ -648,9 +648,6 @@ class GoogleDatastore:
         return entity
 
 
-import os
-from Google_Cloud_Functions import GoogleDatastore, GoogleBigQueryHelper
-
 
 """
 import os

@@ -18,6 +18,8 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 dependencies = [
+  "pydantic>=2",
+  "yfinance>=0.2",
   "PyMuPDF==1.24.10",
   "gspread==6.1.4",
   "gspread_dataframe==4.0.0",
