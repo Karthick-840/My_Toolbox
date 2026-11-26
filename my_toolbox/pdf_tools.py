@@ -1,7 +1,7 @@
 import os
 
 from pdfminer.high_level import extract_text
-from PyPDF2 import PdfMerger, PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
@@ -172,7 +172,7 @@ class PDF_Manipulate(PDFAccess):
 
         if merge_dict is None:
             merge_dict = self.list_pdf_files(list_path=merge_files_path)
-        pdf_merger = PdfMerger()
+        pdf_merger = PdfWriter()
         for name in merge_dict:
             file_path = os.path.join(self.input_path, name)
             pdf_merger.append(file_path)
