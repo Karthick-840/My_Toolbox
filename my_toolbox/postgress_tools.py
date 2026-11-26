@@ -47,7 +47,6 @@ class PostgreSQLDatabase:
         try:
             with self.connection.cursor() as cursor:
                 columns_with_types = ', '.join(f"{col} {dtype}" for col, dtype in columns.items())
-                print("Executing SQL ")  # Debugging statement
                 cursor.execute(f"CREATE TABLE {table_name} ({columns_with_types})")
                 print(f"Table '{table_name}' created successfully.")
         except Exception as e:

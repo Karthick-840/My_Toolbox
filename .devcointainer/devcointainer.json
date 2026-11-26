@@ -1,0 +1,21 @@
+{
+  "name": "Python Dev Container",
+  "build": {
+    "dockerfile": "../Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python", // Python extension
+        "ms-python.vscode-pylance", // Pylance for IntelliSense
+        "mtxr.sqltools", // SQL tools for working with databases
+        "mtxr.sqltools-driver-pg", // PostgreSQL driver for SQL tools
+        "mechatroner.rainbow-csv", // Colorize CSV files
+        "aaron-bond.better-comments", // Improved comment readability with color-coding
+        "github.copilot" // GitHub Copilot for AI-powered code suggestions
+      ]
+    }
+  },
+  "postCreateCommand": "chmod +x ./project_setup.sh && ./project_setup.sh",
+  "remoteUser": "vscode"
+}
