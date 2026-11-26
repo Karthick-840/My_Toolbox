@@ -25,8 +25,10 @@ from .core.my_decorators import (
     type_check,
     validate_args,
 )
+from .version import VERSION as __version__
 
 __all__ = [
+    "__version__",
     "before_after",
     "catch_exception",
     "deprecated",

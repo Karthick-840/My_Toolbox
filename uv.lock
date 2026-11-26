@@ -1535,7 +1535,6 @@ wheels = [
 
 [[package]]
 name = "my-toolbox"
-version = "1.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "pandas" },
@@ -1667,7 +1666,7 @@ requires-dist = [
     { name = "kaggle", marker = "extra == 'data'", specifier = "==1.6.17" },
     { name = "matplotlib", marker = "extra == 'data'", specifier = ">=3.8" },
     { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.2,<2" },
-    { name = "my-toolbox", extras = ["cloud", "data", "documents", "web", "images", "mcp"], marker = "extra == 'all'" },
+    { name = "my-toolbox", extras = ["cloud", "data", "documents", "images", "mcp", "web"], marker = "extra == 'all'" },
     { name = "my-toolbox", extras = ["documents"], marker = "extra == 'mcp'" },
     { name = "opencv-python", marker = "extra == 'images'", specifier = ">=4.9" },
     { name = "openpyxl", marker = "extra == 'data'", specifier = ">=3.1" },
