@@ -7,7 +7,7 @@ This guide ensures feature branches and main are protected by CI checks before m
 - CI Gatekeeper: [.github/workflows/ci.yml](../.github/workflows/ci.yml)
 - Package Quality: [.github/workflows/package.yml](../.github/workflows/package.yml)
 - Security Audit: [.github/workflows/security.yml](../.github/workflows/security.yml)
-- Publish Package: [.github/workflows/publish.yml](../.github/workflows/publish.yml)
+- Release: [.github/workflows/release.yml](../.github/workflows/release.yml) (tag `vX.Y.Z` -> GitHub Release; PyPI opt-in via repo variable `PUBLISH_TO_PYPI=true`)
 
 ## 2. What runs where
 

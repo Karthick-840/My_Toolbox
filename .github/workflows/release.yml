@@ -1,0 +1,83 @@
+name: Release
+
+# Push a tag like v1.3.0 to release. GitHub Release is always created;
+# PyPI publishing is opt-in via the repository variable PUBLISH_TO_PYPI=true.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Tag must match my_toolbox/version.py and HISTORY.md
+        id: check
+        run: |
+          version=$(python3 -c "import re;print(re.search(r'VERSION\s*=\s*\"(.+?)\"', open('my_toolbox/version.py').read()).group(1))")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match version.py ($version)"; exit 1
+          fi
+          grep -q "^## v$version " HISTORY.md || { echo "HISTORY.md has no section for v$version"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Test
+        run: uv run --all-extras pytest
+
+  build:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          uv build
+          uvx twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: dist/
+
+  github-release:
+    needs: [verify, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: dist/
+      - name: Extract release notes
+        run: |
+          awk -v v="## v${{ needs.verify.outputs.version }} " 'index($0, v)==1{f=1;next} /^## /{f=0} f' HISTORY.md > notes.md
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
+
+  publish-to-pypi:
+    needs: [verify, build, github-release]
+    if: vars.PUBLISH_TO_PYPI == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/my-toolbox
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

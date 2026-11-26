@@ -104,6 +104,12 @@ my-toolbox-mcp --workspace /data/work     # stdio; files in <workspace>/inputs a
 
 Usage guides for agents and humans live in [`skills/`](skills/): `use-my-toolbox` (library) and `use-my-toolbox-mcp` (server, client config, Ansible install). Roadmap (not implemented): interactive PDF editing, LLM-based PDF chat, auto-tagging.
 
+## Releasing
+
+1. In a PR, bump `VERSION` in `my_toolbox/version.py` and add a `## vX.Y.Z (date)` section to `HISTORY.md`.
+2. After merge: `git checkout main && git pull && git tag vX.Y.Z && git push origin vX.Y.Z`.
+3. The `Release` workflow checks the tag matches `version.py`, tests, builds, and creates the GitHub Release (notes from `HISTORY.md`, wheel and sdist attached). Set repo variable `PUBLISH_TO_PYPI=true` (plus a PyPI trusted publisher) to also publish to PyPI.
+
 ## License
 
 MIT

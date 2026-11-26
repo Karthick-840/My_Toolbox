@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "my-toolbox"
-version = "1.2.0"
+dynamic = ["version"]
 description = "A useful set of tools for API calls, PDF operations, string/date utilities, streamlit visualizations, log tools, and project helpers."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
@@ -89,6 +89,9 @@ dev = [
 
 [tool.uv]
 default-groups = ["dev"]
+
+[tool.setuptools.dynamic]
+version = {attr = "my_toolbox.version.VERSION"}
 
 [tool.setuptools.packages.find]
 include = ["my_toolbox*"]
