@@ -20,7 +20,9 @@ def _pdf(path, text):
 @pytest.fixture
 def ws(tmp_path):
     server.set_workspace(tmp_path)
-    return tmp_path
+    server.set_limits(allow_write=True, max_rows=1000, max_bytes=50 * 1024 * 1024)
+    yield tmp_path
+    server.set_limits(allow_write=False)
 
 
 def test_merge_extract_split(ws):
@@ -64,3 +66,62 @@ def test_resources_and_prompts(ws):
     info = server.pdf_info("a.pdf")
     assert info["pages"] == 1 and info["encrypted"] is False
     assert server.inputs_resource() == ["a.pdf"]
+
+
+def test_write_tools_blocked_by_default(ws):
+    server.set_limits(allow_write=False)
+    _pdf(ws / "inputs" / "a.pdf", "alpha")
+    with pytest.raises(PermissionError):
+        server.merge_pdfs(["a.pdf"], "x")
+    with pytest.raises(PermissionError):
+        server.convert_to_parquet("a.csv")
+    assert "alpha" in server.extract_text("a.pdf")["text"]
+
+
+def test_data_tools(ws):
+    pd = pytest.importorskip("pandas")
+    pytest.importorskip("pyarrow")
+    pd.DataFrame({"id": [1, 2, 2], "name": ["a", " b", " b"]}).to_csv(ws / "inputs" / "d.csv", index=False)
+    pd.DataFrame({"id": [1], "extra": [1.5]}).to_csv(ws / "inputs" / "e.csv", index=False)
+    prof = server.profile_data("d.csv")
+    assert prof["rows"] == 3 and prof["duplicate_rows"] == 1
+    assert server.data_schema("d.csv") == {"id": "int64", "name": "object"}
+    cmp = server.compare_data_schemas("d.csv", "e.csv")
+    assert cmp["only_in_a"] == ["name"] and cmp["only_in_b"] == ["extra"]
+    kinds = {i["type"] for i in server.data_quality("d.csv")["issues"]}
+    assert {"duplicate_rows", "whitespace_padding"} <= kinds
+    ok = server.check_data_contract("d.csv", {"columns": {"id": {"unique": True}}})
+    assert not ok["passed"]
+    out = server.convert_to_parquet("d.csv")
+    assert out["output"] == "outputs/d.parquet" and (ws / "outputs" / "d.parquet").is_file()
+
+
+def test_query_sql_is_read_only_and_capped(ws, monkeypatch):
+    pytest.importorskip("pandas")
+    db = ws / "t.db"
+    import sqlite3
+
+    con = sqlite3.connect(db)
+    con.execute("create table t(a int)")
+    con.executemany("insert into t values (?)", [(i,) for i in range(10)])
+    con.commit()
+    con.close()
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{db}")
+    res = server.query_sql("select a from t", limit=3)
+    assert res["row_count"] == 3 and res["columns"] == ["a"]
+    with pytest.raises(PermissionError):
+        server.query_sql("delete from t")
+
+
+def test_notebook_tools(ws):
+    import json
+
+    nb = {"cells": [{"cell_type": "code", "source": ["token = 'abcdefgh12345678'\n"],
+                     "outputs": [{"output_type": "stream", "text": ["hi"]}],
+                     "execution_count": 1, "metadata": {}}],
+          "metadata": {}, "nbformat": 4, "nbformat_minor": 5}
+    (ws / "inputs" / "n.ipynb").write_text(json.dumps(nb))
+    assert not server.notebook_scan_secrets("n.ipynb")["clean"]
+    res = server.notebook_strip_outputs("n.ipynb")
+    assert res["outputs_cleared"] == 1
+    assert json.loads((ws / "outputs" / "n.ipynb").read_text())["cells"][0]["outputs"] == []

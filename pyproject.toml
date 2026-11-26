@@ -43,11 +43,21 @@ cloud = [
   "google-cloud-storage==3.10.1",
   "protobuf==5.29.6"
 ]
+analytics = [
+  "pandas>=2.2",
+  "pyarrow>=15",
+  "SQLAlchemy==2.0.36",
+  "openpyxl>=3.1"
+]
+notebooks = [
+  "nbformat>=5.9",
+  "nbclient>=0.10",
+  "ipykernel>=6.29"
+]
 data = [
+  "my-toolbox[analytics]",
   "kaggle==1.6.17",
   "psycopg2-binary==2.9.10",
-  "SQLAlchemy==2.0.36",
-  "openpyxl>=3.1",
   "matplotlib>=3.8",
   "wordcloud>=1.9"
 ]
@@ -70,8 +80,8 @@ images = [
   "opencv-python>=4.9",
   "rembg>=2.0"
 ]
-mcp = ["mcp>=1.2,<2", "my-toolbox[documents]"]
-all = ["my-toolbox[cloud,data,documents,web,images,mcp]"]
+mcp = ["mcp>=1.2,<2", "my-toolbox[documents,analytics]"]
+all = ["my-toolbox[cloud,data,analytics,notebooks,documents,web,images,mcp]"]
 
 [dependency-groups]
 test = ["pytest>=8.2", "pytest-cov>=5.0"]
