@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "my-toolbox"
-version = "1.1.0"
+version = "1.2.0"
 description = "A useful set of tools for API calls, PDF operations, string/date utilities, streamlit visualizations, log tools, and project helpers."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
@@ -26,6 +26,9 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/Karthick-840/My_Toolbox"
 Repository = "https://github.com/Karthick-840/My_Toolbox"
+
+[project.scripts]
+my-toolbox-mcp = "my_toolbox.mcp.server:main"
 
 [project.optional-dependencies]
 cloud = [
@@ -67,7 +70,8 @@ images = [
   "opencv-python>=4.9",
   "rembg>=2.0"
 ]
-all = ["my-toolbox[cloud,data,documents,web,images]"]
+mcp = ["mcp>=1.2,<2", "my-toolbox[documents]"]
+all = ["my-toolbox[cloud,data,documents,web,images,mcp]"]
 
 [dependency-groups]
 test = ["pytest>=8.2", "pytest-cov>=5.0"]
