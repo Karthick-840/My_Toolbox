@@ -33,7 +33,7 @@ dependencies = [
   "pandas==2.2.3",
   "pdfminer==20191125",
   "pdfminer.six==20251230",
-  "Pillow>=13.0.0",
+  "Pillow==12.2.0",
   "protobuf==5.29.6",
   "psycopg2==2.9.10",
   "PyPDF2==3.0.1",
