@@ -22,16 +22,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
+          enable-cache: true
           python-version: "3.12"
-          cache: pip
 
-      - name: Run pip-audit
+      - name: Run pip-audit on locked production dependencies
         run: |
-          python -m venv .venv
-          . .venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install pip-audit
-          pip-audit -r requirements.txt
+          uv export --locked --no-dev --extra all --no-emit-project -o prod-requirements.txt
+          uvx pip-audit -r prod-requirements.txt --disable-pip

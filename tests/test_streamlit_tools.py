@@ -1,4 +1,4 @@
-import my_toolbox.streamlit_tools as streamlit_tools
+import my_toolbox.web.streamlit_tools as streamlit_tools
 
 
 def test_multiapp_add_and_run(monkeypatch):

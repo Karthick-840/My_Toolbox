@@ -5,9 +5,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _python_files():
-    targets = [ROOT / "my_toolbox"]
+    targets = [ROOT / "my_toolbox", ROOT / "app"]
     for target in targets:
-        for file_path in sorted(target.glob("*.py")):
+        for file_path in sorted(target.rglob("*.py")):
             if file_path.name == "__pycache__":
                 continue
             yield file_path

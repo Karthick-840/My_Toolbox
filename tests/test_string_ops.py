@@ -1,6 +1,6 @@
 import pandas as pd
 
-from my_toolbox.string_ops import StringFunctions
+from my_toolbox.core.string_ops import StringFunctions
 
 
 def test_convert_frequency_defaults_and_known(dummy_logger):

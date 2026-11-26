@@ -2,7 +2,7 @@ import json
 import os
 import types
 
-from my_toolbox.kaggle_tools import KaggleTools
+from my_toolbox.data.kaggle_tools import KaggleTools
 
 
 def test_setup_kaggle_credentials_from_json(tmp_path, dummy_logger):

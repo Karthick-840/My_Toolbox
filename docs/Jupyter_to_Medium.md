@@ -1,44 +1,45 @@
-# Jupyter to Medium: Automate Your Blog Publishing
+# Jupyter to Medium
 
-## Introduction
+`my_toolbox.web.medium_tools` converts a Jupyter notebook into a Medium post and publishes it
+through the Medium API. Posts are created as **drafts** by default so you can review them on Medium first.
 
-This ntroduce you to an exciting new Python package called **Jupyter to Medium**. This tool automates the process of publishing Jupyter notebooks as Medium blog posts.
+## Setup
 
-## What is Jupyter to Medium?
+1. Create an integration token on Medium: *Settings > Security and apps > Integration tokens*.
+2. Export it: `export MEDIUM_TOKEN=...` (or pass `token=` to `MediumPublisher`).
 
-**Jupyter to Medium** is a Python package designed to streamline the conversion of Jupyter notebooks into Medium blog posts. If you've ever found it cumbersome to transfer your Jupyter notebook content—especially images and dataframes—into a Medium blog post, this tool is for you.
+## Usage
 
-## Key Features
+```python
+from my_toolbox.web.medium_tools import MediumPublisher
 
-- **Automatic Content Transfer**: Convert text, images, code, and even styled pandas dataframes from Jupyter notebooks into Medium posts.
-- **Image Handling**: Pandas dataframes and other images are automatically transferred as images in the Medium blog post.
-- **Easy Deployment**: After installation, deploy your Jupyter notebook as a Medium blog post directly from the Jupyter interface.
+post = MediumPublisher().publish_notebook(
+    "analysis.ipynb",
+    title=None,              # defaults to the first "# Heading", then the file name
+    tags=["python", "data"], # Medium keeps at most 5
+    status="draft",          # "draft" | "unlisted" | "public"
+)
+print(post["url"])
+```
 
-## How It Works
+Convert without publishing:
 
-1. **Installation**: Install **Jupyter to Medium** via pip.
-2. **Deployment**: In Jupyter, navigate to the file menu and select "Deploy as Medium Post".
-3. **Form Filling**: A new tab will open in your browser where you'll need to fill out a short form. You'll need to provide an integration token from Medium, a title (for SEO purposes), and optional details like publication name and tags.
-4. **Post Status**: Posts are initially set to "draft" to allow for final adjustments on Medium before publishing.
-5. **Finalization**: Once the content is uploaded, you can review the post on Medium and make any necessary final tweaks before publishing.
+```python
+from my_toolbox.web.medium_tools import load_notebook, notebook_to_markdown
 
-## Getting Started
+markdown = notebook_to_markdown(load_notebook("analysis.ipynb"), include_code=True)
+```
 
-1. **Install the Package**:
-    ```bash
-    pip install jupyter-to-medium
-    ```
+## What gets converted
 
-2. **Deploy Your Notebook**:
-    - Open your Jupyter notebook.
-    - Go to `File` -> `Deploy as Medium Post`.
-    - Follow the prompts to fill out the form and submit your post.
+- Markdown cells are kept as-is; code cells become fenced code blocks.
+- Text output (stdout, `text/plain`) becomes a code block; errors are reduced to `ErrorName: message`.
+- Image outputs (PNG, JPEG, GIF - plots, rendered figures) are uploaded to Medium and embedded.
+- Cell tags: `remove-cell` drops a cell, `remove-input` hides its code, `remove-output` hides its outputs.
+- The notebook's first H1 is used as the title and not repeated in the body.
 
-3. **Review and Publish**:
-    - Check the draft post on Medium.
-    - Finalize and publish the post.
+## Limitations
 
-
-## Conclusion
-
-For further details and to get started, visit the [Jupyter to Medium GitHub repository](https://github.com/username/jupyter-to-medium) or consult the official documentation.
+- Styled pandas DataFrames that only exist as HTML output are not rendered; their `text/plain` form is used.
+- The Medium API is no longer actively developed and can stop issuing new integration tokens.
+- No Jupyter menu entry ("Deploy as Medium Post"); call the function from code or a notebook cell.

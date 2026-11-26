@@ -2,7 +2,7 @@ import zipfile
 
 import pandas as pd
 
-from my_toolbox.directory_tools import DataStorage
+from my_toolbox.data.directory_tools import DataStorage
 
 
 def test_import_files_csv_txt_json(tmp_path, dummy_logger):
