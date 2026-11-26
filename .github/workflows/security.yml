@@ -30,5 +30,5 @@ jobs:
 
       - name: Run pip-audit on locked production dependencies
         run: |
-          uv export --locked --no-dev --extra all --no-emit-project --no-hashes -o prod-requirements.txt
+          uv export --locked --no-dev --extra all --no-emit-project -o prod-requirements.txt
           uvx pip-audit -r prod-requirements.txt --disable-pip
